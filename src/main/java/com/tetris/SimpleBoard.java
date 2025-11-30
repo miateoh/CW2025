@@ -8,6 +8,7 @@ import com.tetris.game.bricks.BrickRotator;
 import com.tetris.game.bricks.Brick;
 import com.tetris.game.bricks.BrickGenerator;
 import com.tetris.game.bricks.RandomBrickGenerator;
+import com.tetris.game.logic.BrickManager;
 import com.tetris.game.logic.BrickMovementController;
 
 import java.awt.*;
@@ -21,6 +22,7 @@ public class SimpleBoard implements Board {
     private final BrickRotator brickRotator;
     private final BoardState boardState;
     private final BrickMovementController movementController;
+    private final BrickManager brickManager;
 
     private final Score score;
 
@@ -31,6 +33,7 @@ public class SimpleBoard implements Board {
         boardState = new BoardState(width, height);
         brickGenerator = new RandomBrickGenerator();
         brickRotator = new BrickRotator();
+        brickManager = new BrickManager(brickGenerator);
         movementController = new BrickMovementController(boardState, brickRotator);
         score = new Score();
     }
@@ -57,19 +60,16 @@ public class SimpleBoard implements Board {
 
     @Override
     public boolean createNewBrick() {
-        Brick currentBrick = brickGenerator.getBrick();
-        brickRotator.setBrick(currentBrick);
+        Brick newBrick = brickManager.moveToNextBrick();
+        brickRotator.setBrick(newBrick);
 
-        // Spawn location
         movementController.setCurrentOffset(new Point(4, 10));
 
         return MatrixOperations.intersect(
                 boardState.getMatrix(),
                 brickRotator.getCurrentShape(),
-                (int) movementController.getCurrentOffset()
-                        .getX(),
-                (int) movementController.getCurrentOffset()
-                        .getY()
+                (int) movementController.getCurrentOffset().getX(),
+                (int) movementController.getCurrentOffset().getY()
         );
     }
 
@@ -86,7 +86,7 @@ public class SimpleBoard implements Board {
                         .getX(),
                 (int) movementController.getCurrentOffset()
                         .getY(),
-                brickGenerator.getNextBrick().getShapeMatrix().get(0)
+                brickManager.getNextBrick().getShapeMatrix().get(0)
         );
     }
 
