@@ -24,7 +24,7 @@ public class BoardState {
      * Merges a brick (shape matrix) into the board matrix.
      */
     public void mergeBrick(int[][] shape, int offsetX, int offsetY) {
-        matrix = MatrixOperations.merge(matrix, shape, offsetX, offsetY);
+        MatrixOperations.merge(matrix, shape, offsetX, offsetY);
     }
 
     /**
