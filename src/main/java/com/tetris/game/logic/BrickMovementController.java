@@ -1,25 +1,27 @@
 package com.tetris.game.logic;
 
-import com.tetris.NextShapeInfo;
 import com.tetris.game.board.BoardState;
 import com.tetris.game.board.MatrixOperations;
 import com.tetris.game.bricks.BrickRotator;
 
-import java.awt.*;
+import java.awt.Point;
 
 public class BrickMovementController {
 
     private final BoardState boardState;
     private final BrickRotator brickRotator;
 
-    private Point currentOffset;
+    // Required by tests
+    private Point currentOffset = new Point(4, 0);
 
     public BrickMovementController(BoardState boardState, BrickRotator brickRotator) {
         this.boardState = boardState;
         this.brickRotator = brickRotator;
-        this.currentOffset = new Point(4, 10); // default spawn point
     }
 
+    // ---------------------------------------------
+    // Accessors required by tests
+    // ---------------------------------------------
     public Point getCurrentOffset() {
         return currentOffset;
     }
@@ -28,6 +30,9 @@ public class BrickMovementController {
         this.currentOffset = p;
     }
 
+    // ---------------------------------------------
+    // Movement
+    // ---------------------------------------------
     public boolean moveDown() {
         return tryMove(0, 1);
     }
@@ -40,39 +45,64 @@ public class BrickMovementController {
         return tryMove(1, 0);
     }
 
+    // ---------------------------------------------
+    // Rotation
+    // ---------------------------------------------
     public boolean rotateLeft() {
-        int[][] currentMatrix = MatrixOperations.copy(boardState.getMatrix());
+        int[][] nextShape = brickRotator.getNextShape().getShape();
 
-        NextShapeInfo nextShape = brickRotator.getNextShape();
-        boolean conflict = MatrixOperations.intersect(
-                currentMatrix,
-                nextShape.getShape(),
-                (int) currentOffset.getX(),
-                (int) currentOffset.getY()
+        boolean collides = MatrixOperations.intersect(
+                boardState.getMatrix(),
+                nextShape,
+                currentOffset.x,
+                currentOffset.y
         );
 
-        if (conflict) return false;
+        if (collides) {
+            return false; // blocked
+        }
 
-        brickRotator.setCurrentShape(nextShape.getPosition());
+        brickRotator.setCurrentShape(brickRotator.getNextShape().getPosition());
         return true;
     }
 
+    // ---------------------------------------------
+    // Core internal movement check
+    // ---------------------------------------------
     private boolean tryMove(int dx, int dy) {
-        int[][] currentMatrix = MatrixOperations.copy(boardState.getMatrix());
+        int[][] board = boardState.getMatrix();
+        int[][] shape = brickRotator.getCurrentShape();
 
-        Point p = new Point(currentOffset);
-        p.translate(dx, dy);
+        int newX = currentOffset.x + dx;
+        int newY = currentOffset.y + dy;
 
-        boolean conflict = MatrixOperations.intersect(
-                currentMatrix,
-                brickRotator.getCurrentShape(),
-                (int) p.getX(),
-                (int) p.getY()
-        );
+        int shapeWidth = shape.length;
+        int shapeHeight = shape[0].length;
 
-        if (conflict) return false;
+        // --- 1. Bounds check ------------------------------------
+        for (int sx = 0; sx < shapeWidth; sx++) {
+            for (int sy = 0; sy < shapeHeight; sy++) {
+                if (shape[sx][sy] != 0) {
+                    int boardX = newX + sx;
+                    int boardY = newY + sy;
 
-        currentOffset = p;
+                    // Out of board horizontally
+                    if (boardX < 0 || boardX >= board.length)
+                        return false;
+
+                    // Out of board vertically
+                    if (boardY < 0 || boardY >= board[0].length)
+                        return false;
+
+                    // Collision with existing block
+                    if (board[boardX][boardY] != 0)
+                        return false;
+                }
+            }
+        }
+
+        // --- 2. If all checks passed, update position ------------
+        currentOffset = new Point(newX, newY);
         return true;
     }
 }
