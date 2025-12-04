@@ -1,3 +1,13 @@
+/**
+ * Handles all movement logic for the active falling brick.
+ *
+ * Responsibilities:
+ * - Attempts left, right, down movement.
+ * - Performs rotation with collision checks.
+ * - Delegates final placement to BoardState when a brick lands.
+ *
+ * This class contains no UI code and represents pure game logic.
+ */
 package com.tetris.game.logic;
 
 import com.tetris.game.board.BoardState;

@@ -1,3 +1,10 @@
+/**
+ * Manages the current and next bricks in the game.
+ *
+ * Responsibilities:
+ * - Requests new bricks from the brick generator/factory.
+ * - Keeps track of the active brick and the upcoming preview brick.
+ */
 package com.tetris.game.logic;
 
 import com.tetris.game.bricks.Brick;

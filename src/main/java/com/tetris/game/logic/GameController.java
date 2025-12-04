@@ -1,3 +1,13 @@
+/**
+ * Central coordinator for running the Tetris game.
+ *
+ * Responsibilities:
+ * - Starts and resets games.
+ * - Updates game ticks.
+ * - Delegates movement logic to BrickMovementController.
+ * - Notifies UI about state changes (game over, score updates, brick updates).
+ */
+
 package com.tetris.game.logic;
 
 import com.tetris.ui.views.ViewData;

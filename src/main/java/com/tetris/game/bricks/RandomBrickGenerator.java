@@ -1,3 +1,6 @@
+/**
+ * Factory class responsible for creating new bricks.
+ */
 package com.tetris.game.bricks;
 
 import java.util.ArrayDeque;

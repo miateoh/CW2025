@@ -1,3 +1,9 @@
+/**
+ * Utility class containing all low-level matrix manipulation logic
+ * used for collision detection, merging shapes, and removing full rows.
+ *
+ * This class is stateless and only provides pure static helper methods.
+ */
 package com.tetris.game.board;
 
 import java.util.List;

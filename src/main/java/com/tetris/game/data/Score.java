@@ -1,3 +1,11 @@
+/**
+ * Model class storing the player's score using a JavaFX IntegerProperty.
+ *
+ * Supports:
+ * - Incrementing score.
+ * - Resetting score.
+ * - Binding score to UI components.
+ */
 package com.tetris.game.data;
 
 import javafx.beans.property.IntegerProperty;

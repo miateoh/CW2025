@@ -1,3 +1,13 @@
+/**
+ * Represents the Tetris board model and holds the current state of all cells.
+ *
+ * Responsibilities:
+ * - Stores and manages the matrix of placed blocks.
+ * - Applies merges from falling bricks.
+ * - Detects and clears completed rows.
+ * - Provides utility methods used by movement and game controllers.
+ */
+
 package com.tetris.game.board;
 
 public class BoardState {

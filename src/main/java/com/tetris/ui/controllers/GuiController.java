@@ -1,3 +1,10 @@
+/**
+ * Handles all JavaFX UI updates for the game board, falling brick,
+ * score display, and notifications.
+ *
+ * Delegates all game logic to GameController and acts purely as the view layer.
+ */
+
 package com.tetris.ui.controllers;
 
 import com.tetris.ui.views.ViewData;

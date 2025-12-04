@@ -1,3 +1,12 @@
+/**
+ * Provides rotation operations for brick shapes.
+ *
+ * Handles:
+ * - Cycling through predefined rotation states.
+ * - Returning the current orientation.
+ * - Resetting rotations when new bricks spawn.
+ */
+
 package com.tetris.game.bricks;
 
 public class BrickRotator {
@@ -23,6 +32,4 @@ public class BrickRotator {
         this.brick = brick;
         currentShape = 0;
     }
-
-
 }
