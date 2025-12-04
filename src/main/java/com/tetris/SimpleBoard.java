@@ -1,15 +1,8 @@
 package com.tetris;
 
-import com.tetris.game.board.Board;
-import com.tetris.game.board.ClearRow;
-import com.tetris.game.board.MatrixOperations;
-import com.tetris.game.board.BoardState;
-import com.tetris.game.bricks.BrickRotator;
-import com.tetris.game.bricks.Brick;
-import com.tetris.game.bricks.BrickGenerator;
-import com.tetris.game.bricks.RandomBrickGenerator;
-import com.tetris.game.logic.BrickManager;
-import com.tetris.game.logic.BrickMovementController;
+import com.tetris.game.board.*;
+import com.tetris.game.bricks.*;
+import com.tetris.game.logic.*;
 
 import java.awt.*;
 
@@ -34,42 +27,41 @@ public class SimpleBoard implements Board {
         brickGenerator = new RandomBrickGenerator();
         brickRotator = new BrickRotator();
         brickManager = new BrickManager(brickGenerator);
+
         movementController = new BrickMovementController(boardState, brickRotator);
+
         score = new Score();
     }
 
     @Override
-    public boolean moveBrickDown() {
-        return movementController.moveDown();
-    }
-
+    public boolean moveBrickDown() { return movementController.moveDown(); }
     @Override
-    public boolean moveBrickLeft() {
-        return movementController.moveLeft();
-    }
-
+    public boolean moveBrickLeft() { return movementController.moveLeft(); }
     @Override
-    public boolean moveBrickRight() {
-        return movementController.moveRight();
-    }
-
+    public boolean moveBrickRight() { return movementController.moveRight(); }
     @Override
-    public boolean rotateLeftBrick() {
-        return movementController.rotateLeft();
-    }
+    public boolean rotateLeftBrick() { return movementController.rotateLeft(); }
 
     @Override
     public boolean createNewBrick() {
-        Brick newBrick = brickManager.moveToNextBrick();
-        brickRotator.setBrick(newBrick);
+        Brick brick = brickManager.moveToNextBrick();
+        brickRotator.setBrick(brick);
 
-        movementController.setCurrentOffset(new Point(4, 10));
+        int[][] shape = brickRotator.getCurrentShape();
+
+        int shapeWidth = shape[0].length;
+
+        int startX = (width - shapeWidth) / 2;  // center horizontally
+        int startY = 0;                         // top
+
+        movementController.setCurrentOffset(new Point(startX, startY));
+        // important fix
 
         return MatrixOperations.intersect(
                 boardState.getMatrix(),
                 brickRotator.getCurrentShape(),
-                (int) movementController.getCurrentOffset().getX(),
-                (int) movementController.getCurrentOffset().getY()
+                movementController.getCurrentOffset().x,
+                movementController.getCurrentOffset().y
         );
     }
 
@@ -82,10 +74,8 @@ public class SimpleBoard implements Board {
     public ViewData getViewData() {
         return new ViewData(
                 brickRotator.getCurrentShape(),
-                (int) movementController.getCurrentOffset()
-                        .getX(),
-                (int) movementController.getCurrentOffset()
-                        .getY(),
+                movementController.getCurrentOffset().x,
+                movementController.getCurrentOffset().y,
                 brickManager.getNextBrick().getShapeMatrix().get(0)
         );
     }
@@ -94,10 +84,8 @@ public class SimpleBoard implements Board {
     public void mergeBrickToBackground() {
         boardState.mergeBrick(
                 brickRotator.getCurrentShape(),
-                (int) movementController.getCurrentOffset()
-                        .getX(),
-                (int) movementController.getCurrentOffset()
-                        .getY()
+                movementController.getCurrentOffset().x,
+                movementController.getCurrentOffset().y
         );
     }
 
@@ -107,9 +95,7 @@ public class SimpleBoard implements Board {
     }
 
     @Override
-    public Score getScore() {
-        return score;
-    }
+    public Score getScore() { return score; }
 
     @Override
     public void newGame() {
@@ -118,3 +104,4 @@ public class SimpleBoard implements Board {
         createNewBrick();
     }
 }
+

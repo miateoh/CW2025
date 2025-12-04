@@ -7,33 +7,33 @@ public class MatrixOperations {
 
     private MatrixOperations() {}
 
-    // ----------------------------
-    // CORRECTED COLLISION CHECK
-    // ----------------------------
+    // -------------------------------------------------------------------------
+    // INTERSECTION CHECK — consistent row-major (board[y][x])
+    // -------------------------------------------------------------------------
     public static boolean intersect(int[][] board, int[][] shape, int offsetX, int offsetY) {
 
-        int shapeHeight = shape.length;        // rows (y)
-        int shapeWidth = shape[0].length;      // columns (x)
+        int shapeRows = shape.length;          // y dimension
+        int shapeCols = shape[0].length;       // x dimension
 
-        int boardWidth = board.length;
-        int boardHeight = board[0].length;
+        int boardHeight = board.length;        // rows
+        int boardWidth  = board[0].length;     // columns
 
-        for (int y = 0; y < shapeHeight; y++) {
-            for (int x = 0; x < shapeWidth; x++) {
+        for (int sy = 0; sy < shapeRows; sy++) {
+            for (int sx = 0; sx < shapeCols; sx++) {
 
-                if (shape[y][x] != 0) {
+                if (shape[sy][sx] != 0) {
 
-                    int boardX = offsetX + x;
-                    int boardY = offsetY + y;
+                    int bx = offsetX + sx;     // board X
+                    int by = offsetY + sy;     // board Y
 
-                    // Out of bounds = collision
-                    if (boardX < 0 || boardX >= boardWidth ||
-                            boardY < 0 || boardY >= boardHeight) {
+                    // Out of bounds → collision
+                    if (bx < 0 || bx >= boardWidth ||
+                            by < 0 || by >= boardHeight) {
                         return true;
                     }
 
-                    // Occupied = collision
-                    if (board[boardX][boardY] != 0) {
+                    // Filled cell → collision
+                    if (board[by][bx] != 0) {
                         return true;
                     }
                 }
@@ -43,71 +43,77 @@ public class MatrixOperations {
         return false;
     }
 
-    // ----------------------------
-    // CORRECTED MERGE
-    // ----------------------------
-    public static void merge(int[][] matrix, int[][] shape, int offsetX, int offsetY) {
-        int shapeHeight = shape.length;
-        int shapeWidth = shape[0].length;
+    // -------------------------------------------------------------------------
+    // MERGE SHAPE INTO BOARD — row-major (board[y][x])
+    // -------------------------------------------------------------------------
+    public static void merge(int[][] board, int[][] shape, int offsetX, int offsetY) {
 
-        for (int y = 0; y < shapeHeight; y++) {
-            for (int x = 0; x < shapeWidth; x++) {
+        int shapeRows = shape.length;
+        int shapeCols = shape[0].length;
 
-                if (shape[y][x] != 0) {
+        int boardHeight = board.length;
+        int boardWidth  = board[0].length;
 
-                    int boardX = offsetX + x;
-                    int boardY = offsetY + y;
+        for (int sy = 0; sy < shapeRows; sy++) {
+            for (int sx = 0; sx < shapeCols; sx++) {
 
-                    if (boardX >= 0 && boardX < matrix.length &&
-                            boardY >= 0 && boardY < matrix[0].length) {
-                        matrix[boardX][boardY] = shape[y][x];
+                if (shape[sy][sx] != 0) {
+
+                    int bx = offsetX + sx;
+                    int by = offsetY + sy;
+
+                    if (bx >= 0 && bx < boardWidth &&
+                            by >= 0 && by < boardHeight) {
+
+                        board[by][bx] = shape[sy][sx];
                     }
                 }
             }
         }
     }
 
+    // -------------------------------------------------------------------------
+    // CLEAR ROWS — also updated to row-major (board[y][x])
+    // -------------------------------------------------------------------------
+    public static ClearRow checkRemoving(int[][] board) {
 
-    // ----------------------------
-    // CLEAR ROWS (y is row index)
-    // ----------------------------
-    public static ClearRow checkRemoving(int[][] matrix) {
-
-        int width = matrix.length;
-        int height = matrix[0].length;
+        int boardHeight = board.length;     // rows
+        int boardWidth  = board[0].length;  // columns
 
         int removedCount = 0;
 
-        int[][] newMatrix = new int[width][height];
+        int[][] newBoard = new int[boardHeight][boardWidth];
+        int newRow = boardHeight - 1;
 
-        int newY = height - 1;
+        // Scan from bottom up
+        for (int y = boardHeight - 1; y >= 0; y--) {
 
-        for (int y = height - 1; y >= 0; y--) {
+            boolean full = true;
 
-            boolean fullRow = true;
-            for (int x = 0; x < width; x++) {
-                if (matrix[x][y] == 0) {
-                    fullRow = false;
+            for (int x = 0; x < boardWidth; x++) {
+                if (board[y][x] == 0) {
+                    full = false;
                     break;
                 }
             }
 
-            if (fullRow) {
-                removedCount++;
-            } else {
-                for (int x = 0; x < width; x++) {
-                    newMatrix[x][newY] = matrix[x][y];
+            if (!full) {
+                // Keep this row
+                for (int x = 0; x < boardWidth; x++) {
+                    newBoard[newRow][x] = board[y][x];
                 }
-                newY--;
+                newRow--;
+            } else {
+                removedCount++;
             }
         }
 
-        return new ClearRow(newMatrix, removedCount);
+        return new ClearRow(newBoard, removedCount);
     }
 
-    // ----------------------------
-    // SAFE COPY OF MATRIX
-    // ----------------------------
+    // -------------------------------------------------------------------------
+    // DEEP COPY UTILITIES
+    // -------------------------------------------------------------------------
     public static int[][] copy(int[][] original) {
         int[][] result = new int[original.length][];
         for (int i = 0; i < original.length; i++) {
@@ -116,11 +122,7 @@ public class MatrixOperations {
         return result;
     }
 
-    // ----------------------------
-    // SAFE COPY OF SHAPE LIST
-    // ----------------------------
     public static List<int[][]> deepCopyList(List<int[][]> list) {
         return list.stream().map(MatrixOperations::copy).collect(Collectors.toList());
     }
 }
-

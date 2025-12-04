@@ -11,64 +11,36 @@ public class BrickMovementController {
     private final BoardState boardState;
     private final BrickRotator brickRotator;
 
-    // Required by tests
-    private Point currentOffset = new Point(4, 0);
+    private Point currentOffset = new Point(4, 0);  // correct spawn
 
     public BrickMovementController(BoardState boardState, BrickRotator brickRotator) {
         this.boardState = boardState;
         this.brickRotator = brickRotator;
     }
 
-    // ---------------------------------------------
-    // Accessors required by tests
-    // ---------------------------------------------
-    public Point getCurrentOffset() {
-        return currentOffset;
-    }
+    public Point getCurrentOffset() { return currentOffset; }
+    public void setCurrentOffset(Point p) { this.currentOffset = p; }
 
-    public void setCurrentOffset(Point p) {
-        this.currentOffset = p;
-    }
+    public boolean moveDown() { return tryMove(0, 1); }
+    public boolean moveLeft() { return tryMove(-1, 0); }
+    public boolean moveRight() { return tryMove(1, 0); }
 
-    // ---------------------------------------------
-    // Movement
-    // ---------------------------------------------
-    public boolean moveDown() {
-        return tryMove(0, 1);
-    }
-
-    public boolean moveLeft() {
-        return tryMove(-1, 0);
-    }
-
-    public boolean moveRight() {
-        return tryMove(1, 0);
-    }
-
-    // ---------------------------------------------
-    // Rotation
-    // ---------------------------------------------
     public boolean rotateLeft() {
-        int[][] nextShape = brickRotator.getNextShape().getShape();
+        var nextShapeInfo = brickRotator.getNextShape();
 
-        boolean collides = MatrixOperations.intersect(
+        boolean collision = MatrixOperations.intersect(
                 boardState.getMatrix(),
-                nextShape,
+                nextShapeInfo.getShape(),
                 currentOffset.x,
                 currentOffset.y
         );
 
-        if (collides) {
-            return false; // blocked
-        }
+        if (collision) return false;
 
-        brickRotator.setCurrentShape(brickRotator.getNextShape().getPosition());
+        brickRotator.setCurrentShape(nextShapeInfo.getPosition());
         return true;
     }
 
-    // ---------------------------------------------
-    // Core internal movement check
-    // ---------------------------------------------
     private boolean tryMove(int dx, int dy) {
         int[][] board = boardState.getMatrix();
         int[][] shape = brickRotator.getCurrentShape();
@@ -76,33 +48,33 @@ public class BrickMovementController {
         int newX = currentOffset.x + dx;
         int newY = currentOffset.y + dy;
 
-        int shapeWidth = shape.length;
-        int shapeHeight = shape[0].length;
+        int shapeRows = shape.length;         // y dimension
+        int shapeCols = shape[0].length;      // x dimension
 
-        // --- 1. Bounds check ------------------------------------
-        for (int sx = 0; sx < shapeWidth; sx++) {
-            for (int sy = 0; sy < shapeHeight; sy++) {
-                if (shape[sx][sy] != 0) {
-                    int boardX = newX + sx;
-                    int boardY = newY + sy;
+        int boardHeight = board.length;       // number of rows
+        int boardWidth  = board[0].length;    // number of columns
 
-                    // Out of board horizontally
-                    if (boardX < 0 || boardX >= board.length)
-                        return false;
+        for (int sy = 0; sy < shapeRows; sy++) {
+            for (int sx = 0; sx < shapeCols; sx++) {
 
-                    // Out of board vertically
-                    if (boardY < 0 || boardY >= board[0].length)
-                        return false;
+                if (shape[sy][sx] != 0) {
+                    int bx = newX + sx;   // board X
+                    int by = newY + sy;   // board Y
 
-                    // Collision with existing block
-                    if (board[boardX][boardY] != 0)
-                        return false;
+                    // check bounds
+                    if (bx < 0 || bx >= boardWidth)  return false;
+                    if (by < 0 || by >= boardHeight) return false;
+
+                    // check collision
+                    if (board[by][bx] != 0) return false;
                 }
             }
         }
 
-        // --- 2. If all checks passed, update position ------------
+        // movement allowed
         currentOffset = new Point(newX, newY);
         return true;
     }
+
 }
+

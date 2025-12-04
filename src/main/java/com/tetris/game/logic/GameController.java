@@ -7,7 +7,7 @@ import com.tetris.game.bricks.DownData;
 
 public class GameController implements InputEventListener {
 
-    private Board board = new SimpleBoard(25, 10);
+    private Board board = new SimpleBoard(10, 25);
 
     private final GuiController viewGuiController;
 
