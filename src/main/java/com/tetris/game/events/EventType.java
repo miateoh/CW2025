@@ -1,4 +1,4 @@
-package com.tetris.game.logic;
+package com.tetris.game.events;
 
 public enum EventType {
     DOWN, LEFT, RIGHT, ROTATE

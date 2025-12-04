@@ -1,6 +1,4 @@
-package com.tetris;
-
-import com.tetris.game.logic.EventType;
+package com.tetris.game.events;
 
 public final class MoveEvent {
     private final EventType eventType;

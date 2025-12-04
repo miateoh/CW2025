@@ -1,6 +1,6 @@
 package com.tetris.game.bricks;
 
-import com.tetris.ViewData;
+import com.tetris.ui.views.ViewData;
 import com.tetris.game.board.ClearRow;
 
 public final class DownData {

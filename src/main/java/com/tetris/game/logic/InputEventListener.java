@@ -1,7 +1,7 @@
 package com.tetris.game.logic;
 
-import com.tetris.MoveEvent;
-import com.tetris.ViewData;
+import com.tetris.game.events.MoveEvent;
+import com.tetris.ui.views.ViewData;
 import com.tetris.game.bricks.DownData;
 
 public interface InputEventListener {

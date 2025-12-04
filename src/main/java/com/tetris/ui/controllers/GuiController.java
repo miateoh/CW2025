@@ -1,7 +1,13 @@
-package com.tetris.game.logic;
+package com.tetris.ui.controllers;
 
-import com.tetris.*;
+import com.tetris.ui.views.ViewData;
 import com.tetris.game.bricks.DownData;
+import com.tetris.game.events.EventSource;
+import com.tetris.game.events.EventType;
+import com.tetris.game.events.MoveEvent;
+import com.tetris.game.logic.InputEventListener;
+import com.tetris.ui.views.GameOverPanel;
+import com.tetris.ui.views.NotificationPanel;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.beans.property.BooleanProperty;

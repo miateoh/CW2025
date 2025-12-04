@@ -1,7 +1,5 @@
 package com.tetris.game.bricks;
 
-import com.tetris.NextShapeInfo;
-
 public class BrickRotator {
 
     private Brick brick;

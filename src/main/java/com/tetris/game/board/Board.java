@@ -1,7 +1,7 @@
 package com.tetris.game.board;
 
-import com.tetris.Score;
-import com.tetris.ViewData;
+import com.tetris.game.data.Score;
+import com.tetris.ui.views.ViewData;
 
 public interface Board {
 

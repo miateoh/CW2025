@@ -1,4 +1,4 @@
-package com.tetris;
+package com.tetris.game.data;
 
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;

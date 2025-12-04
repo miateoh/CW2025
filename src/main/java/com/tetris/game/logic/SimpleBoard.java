@@ -1,8 +1,9 @@
-package com.tetris;
+package com.tetris.game.logic;
 
+import com.tetris.ui.views.ViewData;
 import com.tetris.game.board.*;
 import com.tetris.game.bricks.*;
-import com.tetris.game.logic.*;
+import com.tetris.game.data.Score;
 
 import java.awt.*;
 

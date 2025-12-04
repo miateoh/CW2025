@@ -1,4 +1,4 @@
-package com.tetris;
+package com.tetris.ui.views;
 
 import com.tetris.game.board.MatrixOperations;
 

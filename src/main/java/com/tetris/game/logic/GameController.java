@@ -1,9 +1,12 @@
 package com.tetris.game.logic;
 
-import com.tetris.*;
+import com.tetris.ui.views.ViewData;
 import com.tetris.game.board.Board;
 import com.tetris.game.board.ClearRow;
 import com.tetris.game.bricks.DownData;
+import com.tetris.game.events.EventSource;
+import com.tetris.game.events.MoveEvent;
+import com.tetris.ui.controllers.GuiController;
 
 public class GameController implements InputEventListener {
 
