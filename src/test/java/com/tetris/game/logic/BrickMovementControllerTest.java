@@ -1,82 +1,73 @@
 package com.tetris.game.logic;
 
 import com.tetris.game.board.BoardState;
-import com.tetris.game.bricks.Brick;
 import com.tetris.game.bricks.BrickRotator;
+import com.tetris.game.bricks.IBrick;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.awt.Point;
-import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 class BrickMovementControllerTest {
 
-    private BoardState boardState;
+    private BoardState board;
     private BrickRotator rotator;
     private BrickMovementController controller;
 
-    static class TestBrick implements Brick {
-        private final List<int[][]> shapes;
-
-        TestBrick(int[][] shape) {
-            int[][][] wrapped = new int[][][] { shape };
-            this.shapes = List.of(wrapped);
-        }
-
-        @Override
-        public List<int[][]> getShapeMatrix() {
-            return shapes;
-        }
-    }
-
     @BeforeEach
     void setup() {
-        boardState = new BoardState(10, 20);
+        board = new BoardState(10, 20);
         rotator = new BrickRotator();
+        controller = new BrickMovementController(board, rotator);
 
-        int[][] shape = {
-                {1, 1, 1},
-                {0, 1, 0}
-        };
-
-        rotator.setBrick(new TestBrick(shape));
-        controller = new BrickMovementController(boardState, rotator);
+        rotator.setBrick(new IBrick()); // predictable horizontal I-piece
         controller.setCurrentOffset(new Point(4, 0));
     }
 
     @Test
     void testMoveDown() {
         assertTrue(controller.moveDown());
-    }
-
-    @Test
-    void testMoveLeft() {
-        controller.setCurrentOffset(new Point(5, 5));
-        assertTrue(controller.moveLeft());
-    }
-
-    @Test
-    void testMoveRight() {
-        controller.setCurrentOffset(new Point(5, 5));
-        assertTrue(controller.moveRight());
-    }
-
-    @Test
-    void testRotateNoCollision() {
-        controller.setCurrentOffset(new Point(4, 5));
-        assertTrue(controller.rotateLeft(), "Rotation should be allowed in open space");
+        assertEquals(1, controller.getCurrentOffset().y);
     }
 
     @Test
     void testMoveBlockedByBoard() {
-        // Put a block directly below the brick
-        int[][] matrix = boardState.getMatrix();
-        matrix[4][1] = 9; // any non-zero value
+        BoardState board = new BoardState(10, 20);
+        BrickRotator rotator = new BrickRotator();
+        rotator.setBrick(new IBrick());
+        BrickMovementController controller = new BrickMovementController(board, rotator);
 
         controller.setCurrentOffset(new Point(4, 0));
 
-        assertFalse(controller.moveDown(), "Move down should fail when space is occupied");
+        // The I-brick at offset (4, 0) has solid cells at board[1][4-7]
+        // When it tries to move down to (4, 1), it will check board[2][4-7]
+        // So we need to block row 2, not row 1
+        board.getMatrix()[2][4] = 9;  // Block at least one cell in the path
+
+        boolean moved = controller.moveDown();
+
+        assertFalse(moved, "Move down should fail when space is occupied");
+    }
+
+
+    @Test
+    void testMoveLeft() {
+        controller.setCurrentOffset(new Point(4, 0));
+        assertTrue(controller.moveLeft());
+        assertEquals(3, controller.getCurrentOffset().x);
+    }
+
+    @Test
+    void testMoveRight() {
+        controller.setCurrentOffset(new Point(4, 0));
+        assertTrue(controller.moveRight());
+        assertEquals(5, controller.getCurrentOffset().x);
+    }
+
+    @Test
+    void testRotateNoCollision() {
+        assertTrue(controller.rotateLeft());
     }
 }
