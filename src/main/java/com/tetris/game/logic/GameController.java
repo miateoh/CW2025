@@ -80,4 +80,11 @@ public class GameController implements InputEventListener {
         board.newGame();
         viewGuiController.refreshGameBackground(board.getBoardMatrix());
     }
+
+    public DownData onHardDropEvent(MoveEvent event) {
+        DownData data = board.hardDrop();
+        viewGuiController.refreshGameBackground(board.getBoardMatrix());
+        return data;
+    }
+
 }

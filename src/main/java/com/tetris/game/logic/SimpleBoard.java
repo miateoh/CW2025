@@ -36,10 +36,13 @@ public class SimpleBoard implements Board {
 
     @Override
     public boolean moveBrickDown() { return movementController.moveDown(); }
+
     @Override
     public boolean moveBrickLeft() { return movementController.moveLeft(); }
+
     @Override
     public boolean moveBrickRight() { return movementController.moveRight(); }
+
     @Override
     public boolean rotateLeftBrick() { return movementController.rotateLeft(); }
 
@@ -56,7 +59,6 @@ public class SimpleBoard implements Board {
         int startY = 0;                         // top
 
         movementController.setCurrentOffset(new Point(startX, startY));
-        // important fix
 
         return MatrixOperations.intersect(
                 boardState.getMatrix(),
@@ -96,7 +98,9 @@ public class SimpleBoard implements Board {
     }
 
     @Override
-    public Score getScore() { return score; }
+    public Score getScore() {
+        return score;
+    }
 
     @Override
     public void newGame() {
@@ -104,5 +108,34 @@ public class SimpleBoard implements Board {
         score.reset();
         createNewBrick();
     }
-}
 
+    @Override
+    public DownData hardDrop() {
+
+        int distance = 0;
+
+        // Move down until a collision stops us
+        while (moveBrickDown()) {
+            distance++;
+        }
+
+        // Lock the piece
+        mergeBrickToBackground();
+
+        // Clear rows
+        ClearRow clearRow = clearRows();
+        if (clearRow.getLinesRemoved() > 0) {
+            score.add(clearRow.getScoreBonus());
+        }
+
+        // Hard drop scoring bonus
+        score.add(distance * 2);
+
+        // Spawn next brick
+        boolean gameOver = createNewBrick();
+
+        ViewData viewData = getViewData();
+
+        return new DownData(clearRow, viewData);
+    }
+}

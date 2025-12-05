@@ -75,28 +75,55 @@ public class GuiController implements Initializable {
             @Override
             public void handle(KeyEvent keyEvent) {
                 if (isPause.getValue() == Boolean.FALSE && isGameOver.getValue() == Boolean.FALSE) {
+
                     if (keyEvent.getCode() == KeyCode.LEFT || keyEvent.getCode() == KeyCode.A) {
                         refreshBrick(eventListener.onLeftEvent(new MoveEvent(EventType.LEFT, EventSource.USER)));
                         keyEvent.consume();
                     }
+
                     if (keyEvent.getCode() == KeyCode.RIGHT || keyEvent.getCode() == KeyCode.D) {
                         refreshBrick(eventListener.onRightEvent(new MoveEvent(EventType.RIGHT, EventSource.USER)));
                         keyEvent.consume();
                     }
+
                     if (keyEvent.getCode() == KeyCode.UP || keyEvent.getCode() == KeyCode.W) {
                         refreshBrick(eventListener.onRotateEvent(new MoveEvent(EventType.ROTATE, EventSource.USER)));
                         keyEvent.consume();
                     }
+
                     if (keyEvent.getCode() == KeyCode.DOWN || keyEvent.getCode() == KeyCode.S) {
                         moveDown(new MoveEvent(EventType.DOWN, EventSource.USER));
                         keyEvent.consume();
                     }
+
+                    // ⭐ HARD DROP (SPACE)
+                    if (keyEvent.getCode() == KeyCode.SPACE) {
+
+                        DownData downData = eventListener.onHardDropEvent(
+                                new MoveEvent(EventType.DOWN, EventSource.USER)
+                        );
+
+                        // Show row clear notification if needed
+                        if (downData.getClearRow() != null && downData.getClearRow().getLinesRemoved() > 0) {
+                            NotificationPanel notificationPanel =
+                                    new NotificationPanel("+" + downData.getClearRow().getScoreBonus());
+                            groupNotification.getChildren().add(notificationPanel);
+                            notificationPanel.showScore(groupNotification.getChildren());
+                        }
+
+                        // Update falling brick position
+                        refreshBrick(downData.getViewData());
+
+                        keyEvent.consume();
+                    }
                 }
+
                 if (keyEvent.getCode() == KeyCode.N) {
                     newGame(null);
                 }
             }
         });
+
         gameOverPanel.setVisible(false);
 
         final Reflection reflection = new Reflection();

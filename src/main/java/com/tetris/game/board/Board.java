@@ -2,6 +2,7 @@ package com.tetris.game.board;
 
 import com.tetris.game.data.Score;
 import com.tetris.ui.views.ViewData;
+import com.tetris.game.bricks.DownData;
 
 public interface Board {
 
@@ -26,4 +27,6 @@ public interface Board {
     Score getScore();
 
     void newGame();
+
+    DownData hardDrop();
 }
