@@ -21,17 +21,18 @@ import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.Group;
-import javafx.scene.Node;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
 import javafx.scene.shape.Rectangle;
+import javafx.scene.text.Font;
+import javafx.scene.text.Text;
 import javafx.util.Duration;
 
 import java.net.URL;
@@ -40,11 +41,14 @@ import java.util.ResourceBundle;
 public class GuiController implements Initializable {
 
     private static final int BRICK_SIZE = 20;
+    private static final int PREVIEW_SIZE = 15;
 
     @FXML private GridPane gamePanel;
     @FXML private GridPane brickPanel;
     @FXML private Group groupNotification;
     @FXML private GameOverPanel gameOverPanel;
+    @FXML private Pane nextPiecePane;
+    @FXML private Pane holdPiecePane;
 
     private Rectangle[][] displayMatrix;
     private Rectangle[][] rectangles;
@@ -55,14 +59,14 @@ public class GuiController implements Initializable {
     private final BooleanProperty isPause = new SimpleBooleanProperty(false);
     private final BooleanProperty isGameOver = new SimpleBooleanProperty(false);
 
+    private GridPane nextPieceGrid;
+    private GridPane holdPieceGrid;
+
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-
         gamePanel.setFocusTraversable(true);
         gamePanel.requestFocus();
-
         gamePanel.setOnKeyPressed(this::handleKeyPress);
-
         gameOverPanel.setVisible(false);
     }
 
@@ -97,6 +101,12 @@ public class GuiController implements Initializable {
                 }
 
                 refreshBrick(data.getViewData());
+            }
+
+            // HOLD PIECE (C key)
+            if (keyEvent.getCode() == KeyCode.C) {
+                ViewData data = eventListener.onHoldEvent(new MoveEvent(EventType.ROTATE, EventSource.USER));
+                refreshBrick(data);
             }
         }
 
@@ -134,6 +144,10 @@ public class GuiController implements Initializable {
 
         updateBrickPanelPosition(brick);
 
+        // Initialize next and hold piece displays
+        initializeNextPieceDisplay(brick.getNextBrickData());
+        initializeHoldPieceDisplay();
+
         // GAME LOOP TIMER
         timeLine = new Timeline(new KeyFrame(Duration.millis(400),
                 t -> moveDown(new MoveEvent(EventType.DOWN, EventSource.THREAD))));
@@ -141,10 +155,80 @@ public class GuiController implements Initializable {
         timeLine.play();
     }
 
+    // ----------------------- NEXT & HOLD PIECE SETUP ---------------------
+
+    private void initializeNextPieceDisplay(int[][] nextBrick) {
+        if (nextPiecePane == null) {
+            // Create pane programmatically if not in FXML
+            nextPiecePane = new Pane();
+            nextPiecePane.setLayoutX(gamePanel.getLayoutX() + gamePanel.getWidth() + 30);
+            nextPiecePane.setLayoutY(gamePanel.getLayoutY() + 50);
+            nextPiecePane.setPrefSize(100, 100);
+            nextPiecePane.setStyle("-fx-background-color: rgba(0, 0, 0, 0.5); -fx-border-color: white; -fx-border-width: 2;");
+            Pane root = (Pane) gamePanel.getScene().getRoot();
+            root.getChildren().add(nextPiecePane);
+
+            Text label = new Text("NEXT");
+            label.setFill(Color.WHITE);
+            label.setFont(Font.font("Arial", 16));
+            label.setLayoutX(30);
+            label.setLayoutY(20);
+            nextPiecePane.getChildren().add(label);
+        }
+
+        nextPieceGrid = new GridPane();
+        nextPieceGrid.setLayoutX(20);
+        nextPieceGrid.setLayoutY(30);
+        nextPiecePane.getChildren().add(nextPieceGrid);
+
+        updatePreviewGrid(nextPieceGrid, nextBrick);
+    }
+
+    private void initializeHoldPieceDisplay() {
+        if (holdPiecePane == null) {
+            // Create pane programmatically if not in FXML
+            holdPiecePane = new Pane();
+            holdPiecePane.setLayoutX(gamePanel.getLayoutX() - 120);
+            holdPiecePane.setLayoutY(gamePanel.getLayoutY() + 50);
+            holdPiecePane.setPrefSize(100, 100);
+            holdPiecePane.setStyle("-fx-background-color: rgba(0, 0, 0, 0.5); -fx-border-color: white; -fx-border-width: 2;");
+            Pane root = (Pane) gamePanel.getScene().getRoot();
+            root.getChildren().add(holdPiecePane);
+
+            Text label = new Text("HOLD (C)");
+            label.setFill(Color.WHITE);
+            label.setFont(Font.font("Arial", 14));
+            label.setLayoutX(15);
+            label.setLayoutY(20);
+            holdPiecePane.getChildren().add(label);
+        }
+
+        holdPieceGrid = new GridPane();
+        holdPieceGrid.setLayoutX(20);
+        holdPieceGrid.setLayoutY(30);
+        holdPiecePane.getChildren().add(holdPieceGrid);
+    }
+
+    private void updatePreviewGrid(GridPane grid, int[][] brickData) {
+        grid.getChildren().clear();
+
+        if (brickData == null) return;
+
+        for (int y = 0; y < brickData.length; y++) {
+            for (int x = 0; x < brickData[y].length; x++) {
+                Rectangle rect = new Rectangle(PREVIEW_SIZE, PREVIEW_SIZE);
+                rect.setFill(getFillColor(brickData[y][x]));
+                rect.setArcHeight(5);
+                rect.setArcWidth(5);
+                grid.add(rect, x, y);
+            }
+        }
+    }
+
     // ------------------------ REFRESH BRICK -----------------------------
 
     private void refreshBrick(ViewData brick) {
-        if (isPause.get() || isGameOver.get()) return;  // Added isGameOver check
+        if (isPause.get() || isGameOver.get()) return;
 
         updateBrickPanelPosition(brick);
 
@@ -157,15 +241,15 @@ public class GuiController implements Initializable {
         }
 
         drawGhost(brick);
+
+        // Update next and hold piece previews
+        updatePreviewGrid(nextPieceGrid, brick.getNextBrickData());
+        updatePreviewGrid(holdPieceGrid, brick.getHoldBrickData());
     }
 
     private void updateBrickPanelPosition(ViewData brick) {
         brickPanel.setLayoutX(gamePanel.getLayoutX() + brick.getxPosition() * BRICK_SIZE);
-        brickPanel.setLayoutY(
-                -42 +
-                        gamePanel.getLayoutY() +
-                        brick.getyPosition() * BRICK_SIZE
-        );
+        brickPanel.setLayoutY(-42 + gamePanel.getLayoutY() + brick.getyPosition() * BRICK_SIZE);
     }
 
     // ----------------------- GHOST DRAWING ------------------------------
@@ -176,10 +260,7 @@ public class GuiController implements Initializable {
                 n -> n instanceof Rectangle && ((Rectangle) n).getOpacity() == 0.3
         );
 
-        // Don't draw ghost if game is over
-        if (isGameOver.get()) {
-            return;
-        }
+        if (isGameOver.get()) return;
 
         int[][] shape = brick.getBrickData();
         int ghostY = brick.getGhostLandingY();
@@ -190,7 +271,6 @@ public class GuiController implements Initializable {
                     int boardX = brick.getxPosition() + sx;
                     int boardY = ghostY + sy - 2;  // adjust board offset
 
-                    // CRITICAL FIX: Validate coordinates before adding to GridPane
                     if (boardY >= 0 && boardX >= 0) {
                         Rectangle g = new Rectangle(BRICK_SIZE, BRICK_SIZE);
                         g.setFill(Color.GRAY);

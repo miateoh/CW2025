@@ -88,4 +88,13 @@ public class GameController implements InputEventListener {
         return new DownData(data.getClearRow(), board.getViewData());
     }
 
+    @Override
+    public ViewData onHoldEvent(MoveEvent event) {
+        boolean success = board.holdPiece();
+        if (success) {
+            return board.getViewData();
+        }
+        // If hold failed (already used), return current state
+        return board.getViewData();
+    }
 }

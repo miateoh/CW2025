@@ -32,4 +32,7 @@ public class BrickRotator {
         this.brick = brick;
         currentShape = 0;
     }
+    public Brick getBrick() {
+        return brick;
+    }
 }

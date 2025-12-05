@@ -5,7 +5,7 @@ import com.tetris.game.board.*;
 import com.tetris.game.bricks.*;
 import com.tetris.game.data.Score;
 
-import java.awt.Point;
+import java.awt.*;
 
 public class SimpleBoard implements Board {
 
@@ -20,6 +20,10 @@ public class SimpleBoard implements Board {
 
     private final Score score;
 
+    // Hold piece variables
+    private Brick heldBrick = null;
+    private boolean canHold = true;  // Resets when piece locks
+
     public SimpleBoard(int width, int height) {
         this.width = width;
         this.height = height;
@@ -28,6 +32,7 @@ public class SimpleBoard implements Board {
         brickGenerator = new RandomBrickGenerator();
         brickRotator = new BrickRotator();
         brickManager = new BrickManager(brickGenerator);
+
         movementController = new BrickMovementController(boardState, brickRotator);
 
         score = new Score();
@@ -51,16 +56,56 @@ public class SimpleBoard implements Board {
         brickRotator.setBrick(brick);
 
         int[][] shape = brickRotator.getCurrentShape();
+        int shapeWidth = shape[0].length;
 
-        int startX = (width - shape[0].length) / 2;
-        movementController.setCurrentOffset(new Point(startX, 0));
+        int startX = (width - shapeWidth) / 2;
+        int startY = 0;
+
+        movementController.setCurrentOffset(new Point(startX, startY));
+
+        // Reset hold ability for new piece
+        canHold = true;
 
         return MatrixOperations.intersect(
                 boardState.getMatrix(),
-                shape,
-                startX,
-                0
+                brickRotator.getCurrentShape(),
+                movementController.getCurrentOffset().x,
+                movementController.getCurrentOffset().y
         );
+    }
+
+    @Override
+    public boolean holdPiece() {
+        // Can only hold once per piece
+        if (!canHold) {
+            return false;
+        }
+
+        Brick currentBrick = brickRotator.getBrick();
+
+        if (heldBrick == null) {
+            // First hold - store current and spawn next
+            heldBrick = currentBrick;
+            createNewBrick();
+        } else {
+            // Swap current with held
+            Brick temp = heldBrick;
+            heldBrick = currentBrick;
+
+            // Spawn the previously held brick
+            brickRotator.setBrick(temp);
+            int[][] shape = brickRotator.getCurrentShape();
+            int shapeWidth = shape[0].length;
+
+            int startX = (width - shapeWidth) / 2;
+            int startY = 0;
+
+            movementController.setCurrentOffset(new Point(startX, startY));
+        }
+
+        // Disable hold until piece locks
+        canHold = false;
+        return true;
     }
 
     @Override
@@ -70,17 +115,21 @@ public class SimpleBoard implements Board {
 
     @Override
     public ViewData getViewData() {
+
         int[][] currentShape = brickRotator.getCurrentShape();
         Point offset = movementController.getCurrentOffset();
-        int[][] nextShape = brickManager.getNextBrick().getShapeMatrix().get(0);
 
-        int ghostY = movementController.getGhostLandingY();
+        int[][] nextBrickShape = brickManager.getNextBrick().getShapeMatrix().get(0);
+        int[][] holdBrickShape = heldBrick != null ? heldBrick.getShapeMatrix().get(0) : null;
+
+        int ghostY = movementController.getGhostLandingY(); // FIX
 
         return new ViewData(
                 currentShape,
                 offset.x,
                 offset.y,
-                nextShape,
+                nextBrickShape,
+                holdBrickShape,
                 ghostY
         );
     }
@@ -100,12 +149,16 @@ public class SimpleBoard implements Board {
     }
 
     @Override
-    public Score getScore() { return score; }
+    public Score getScore() {
+        return score;
+    }
 
     @Override
     public void newGame() {
         boardState.reset();
         score.reset();
+        heldBrick = null;  // Clear held piece
+        canHold = true;
         createNewBrick();
     }
 
@@ -128,7 +181,8 @@ public class SimpleBoard implements Board {
 
         boolean gameOver = createNewBrick();
 
-        return new DownData(clearRow, getViewData());
+        ViewData viewData = getViewData();
+
+        return new DownData(clearRow, viewData);
     }
 }
-
