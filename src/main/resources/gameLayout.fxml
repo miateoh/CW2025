@@ -29,21 +29,36 @@
         </center>
     </BorderPane>
 
-    <!-- NEXT PANEL (top-right) -->
+    <!-- NEXT PANEL (top-right) - UPDATED FOR 3 PIECES -->
     <Pane fx:id="nextPiecePane"
           layoutX="250"
           layoutY="70"
-          prefWidth="100" prefHeight="90"
+          prefWidth="120" prefHeight="240"
           style="-fx-background-color: rgba(0, 0, 0, 0.55); -fx-border-color: white; -fx-border-width: 2;">
-        <Label text="NEXT" layoutX="28" layoutY="8"
+
+        <Label text="NEXT" layoutX="42" layoutY="8"
                style="-fx-text-fill: white; -fx-font-size: 14;" />
-        <GridPane fx:id="nextPieceGrid" layoutX="22" layoutY="30"/>
+
+        <!-- Three next pieces stacked vertically -->
+        <VBox layoutX="10" layoutY="30" spacing="-2" alignment="TOP_CENTER">
+            <GridPane fx:id="nextPiecePanel1" hgap="1" vgap="1"
+                      minWidth="80" minHeight="80"
+                      prefWidth="80" prefHeight="80"/>
+
+            <GridPane fx:id="nextPiecePanel2" hgap="1" vgap="1"
+                      minWidth="80" minHeight="80"
+                      prefWidth="80" prefHeight="80"/>
+
+            <GridPane fx:id="nextPiecePanel3" hgap="1" vgap="1"
+                      minWidth="80" minHeight="80"
+                      prefWidth="80" prefHeight="80"/>
+        </VBox>
     </Pane>
 
     <!-- HOLD PANEL (below NEXT) -->
     <Pane fx:id="holdPiecePane"
           layoutX="250"
-          layoutY="200"
+          layoutY="320"
           prefWidth="100" prefHeight="90"
           style="-fx-background-color: rgba(0, 0, 0, 0.55); -fx-border-color: white; -fx-border-width: 2;">
         <Label text="HOLD" layoutX="28" layoutY="8"
@@ -61,4 +76,3 @@
         <URL value="@window_style.css"/>
     </stylesheets>
 </Pane>
-

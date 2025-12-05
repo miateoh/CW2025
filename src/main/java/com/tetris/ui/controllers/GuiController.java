@@ -39,30 +39,31 @@ import javafx.scene.paint.Paint;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.control.Label;
 
-import javafx.scene.text.Font;
-import javafx.scene.text.Text;
 import javafx.util.Duration;
 
 import java.net.URL;
 import java.util.ResourceBundle;
 
+import java.util.List;
+import java.util.ArrayList;
+
 public class GuiController implements Initializable {
 
     private static final int BRICK_SIZE = 20;
-    private static final int PREVIEW_SIZE = 15;
 
     @FXML private GridPane gamePanel;
     @FXML private GridPane brickPanel;
 
-    @FXML private Pane nextPiecePane;
     @FXML private Pane holdPiecePane;
     @FXML private Group groupNotification;
     @FXML private GameOverPanel gameOverPanel;
 
-    @FXML private GridPane nextPieceGrid;
     @FXML private GridPane holdPieceGrid;
 
     @FXML private Label scoreLabel;
+    @FXML private GridPane nextPiecePanel1;
+    @FXML private GridPane nextPiecePanel2;
+    @FXML private GridPane nextPiecePanel3;
 
     private Rectangle[][] displayMatrix;
     private Rectangle[][] rectangles;
@@ -72,6 +73,7 @@ public class GuiController implements Initializable {
 
     private final BooleanProperty isPause = new SimpleBooleanProperty(false);
     private final BooleanProperty isGameOver = new SimpleBooleanProperty(false);
+    private Rectangle[][][] nextPieceRectangles;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -80,6 +82,34 @@ public class GuiController implements Initializable {
         gamePanel.setOnKeyPressed(this::handleKeyPress);
 
         gameOverPanel.setVisible(false);
+
+        initializeNextPiecePanels();
+        initializeHoldPieceDisplay();
+    }
+
+    private void initializeNextPiecePanels() {
+        nextPieceRectangles = new Rectangle[3][4][4];
+
+        GridPane[] nextPanels = {nextPiecePanel1, nextPiecePanel2, nextPiecePanel3};
+
+        for (int panelIndex = 0; panelIndex < nextPanels.length; panelIndex++) {
+            GridPane panel = nextPanels[panelIndex];
+            panel.getChildren().clear();
+
+            // Use smaller size for next pieces
+            int PREVIEW_SIZE = 16; // Smaller than BRICK_SIZE (20)
+
+            for (int y = 0; y < 4; y++) {
+                for (int x = 0; x < 4; x++) {
+                    Rectangle r = new Rectangle(PREVIEW_SIZE, PREVIEW_SIZE); // Changed from BRICK_SIZE
+                    r.setFill(Color.TRANSPARENT);
+                    r.setArcWidth(9);
+                    r.setArcHeight(9);
+                    nextPieceRectangles[panelIndex][y][x] = r;
+                    panel.add(r, x, y);
+                }
+            }
+        }
     }
 
     private void handleKeyPress(KeyEvent keyEvent) {
@@ -154,9 +184,8 @@ public class GuiController implements Initializable {
         }
 
         updateBrickPanelPosition(brick);
-
-        initializeNextPieceDisplay(brick.getNextBrickData());
-        initializeHoldPieceDisplay();
+        updateNextPiecesDisplay(brick);
+        updateHoldPieceDisplay(brick);
 
         // TIMER
         timeLine = new Timeline(new KeyFrame(
@@ -168,29 +197,30 @@ public class GuiController implements Initializable {
     }
 
     // ---------------------------------------------------------
-    // PREVIEW PANELS
+    // HOLD PIECE DISPLAY
     // ---------------------------------------------------------
 
-    private void initializeNextPieceDisplay(int[][] next) {
-        updatePreviewGrid(nextPieceGrid, next);
-    }
-
     private void initializeHoldPieceDisplay() {
-        updatePreviewGrid(holdPieceGrid, null);
+        holdPieceGrid.getChildren().clear();
     }
 
-    private void updatePreviewGrid(GridPane grid, int[][] data) {
-        grid.getChildren().clear();
+    private void updateHoldPieceDisplay(ViewData brick) {
+        holdPieceGrid.getChildren().clear();
 
-        if (data == null) return;
+        int[][] holdData = brick.getHoldBrickData();
+        if (holdData == null) return;
 
-        for (int y = 0; y < data.length; y++) {
-            for (int x = 0; x < data[y].length; x++) {
-                Rectangle r = new Rectangle(PREVIEW_SIZE, PREVIEW_SIZE);
-                r.setFill(getFillColor(data[y][x]));
-                r.setArcHeight(5);
-                r.setArcWidth(5);
-                grid.add(r, x, y);
+        int HOLD_SIZE = 16; // Same as PREVIEW_SIZE
+
+        for (int y = 0; y < holdData.length; y++) {
+            for (int x = 0; x < holdData[y].length; x++) {
+                if (holdData[y][x] != 0) {
+                    Rectangle r = new Rectangle(HOLD_SIZE, HOLD_SIZE); // Changed from BRICK_SIZE
+                    r.setFill(getFillColor(holdData[y][x]));
+                    r.setArcWidth(9);
+                    r.setArcHeight(9);
+                    holdPieceGrid.add(r, x, y);
+                }
             }
         }
     }
@@ -204,6 +234,7 @@ public class GuiController implements Initializable {
 
         updateBrickPanelPosition(brick);
 
+        // Update current falling brick
         int[][] shape = brick.getBrickData();
         for (int y = 0; y < shape.length; y++) {
             for (int x = 0; x < shape[y].length; x++) {
@@ -213,8 +244,70 @@ public class GuiController implements Initializable {
 
         drawGhost(brick);
 
-        updatePreviewGrid(nextPieceGrid, brick.getNextBrickData());
-        updatePreviewGrid(holdPieceGrid, brick.getHoldBrickData());
+        // Update next pieces display
+        updateNextPiecesDisplay(brick);
+        // Update hold piece display
+        updateHoldPieceDisplay(brick);
+    }
+
+    // Method to update all 3 next pieces
+    private void updateNextPiecesDisplay(ViewData brick) {
+        // Get all next pieces from ViewData
+        List<int[][]> nextBricks = brick.getNextBricksData();
+
+        // If we have multiple next pieces (should be 3)
+        if (nextBricks != null && !nextBricks.isEmpty()) {
+            // Display up to 3 pieces
+            for (int i = 0; i < Math.min(3, nextBricks.size()); i++) {
+                int[][] nextShape = nextBricks.get(i);
+                drawNextPiece(i, nextShape);
+            }
+
+            // Clear any remaining panels if we have less than 3 pieces
+            for (int i = nextBricks.size(); i < 3; i++) {
+                clearNextPiecePanel(i);
+            }
+        } else {
+            // Fallback: if ViewData doesn't provide multiple pieces
+            int[][] singleNextPiece = brick.getNextBrickData();
+            if (singleNextPiece != null) {
+                drawNextPiece(0, singleNextPiece);
+                clearNextPiecePanel(1);
+                clearNextPiecePanel(2);
+            }
+        }
+    }
+
+    // Draw a single next piece in a specific panel
+    private void drawNextPiece(int panelIndex, int[][] shape) {
+        // Clear the panel first
+        clearNextPiecePanel(panelIndex);
+
+        if (shape == null) return;
+
+        // Calculate centering offset for 4x4 grid
+        int offsetX = (4 - shape[0].length) / 2;
+        int offsetY = (4 - shape.length) / 2;
+
+        // Draw the piece
+        for (int y = 0; y < shape.length; y++) {
+            for (int x = 0; x < shape[y].length; x++) {
+                if (shape[y][x] != 0) {
+                    Rectangle r = nextPieceRectangles[panelIndex][offsetY + y][offsetX + x];
+                    setRectangleData(shape[y][x], r);
+                }
+            }
+        }
+    }
+
+    // Clear a specific next piece panel
+    private void clearNextPiecePanel(int panelIndex) {
+        for (int y = 0; y < 4; y++) {
+            for (int x = 0; x < 4; x++) {
+                Rectangle r = nextPieceRectangles[panelIndex][y][x];
+                r.setFill(Color.TRANSPARENT);
+            }
+        }
     }
 
     private void updateBrickPanelPosition(ViewData brick) {
