@@ -5,7 +5,7 @@ import com.tetris.game.board.*;
 import com.tetris.game.bricks.*;
 import com.tetris.game.data.Score;
 
-import java.awt.*;
+import java.awt.Point;
 
 public class SimpleBoard implements Board {
 
@@ -28,7 +28,6 @@ public class SimpleBoard implements Board {
         brickGenerator = new RandomBrickGenerator();
         brickRotator = new BrickRotator();
         brickManager = new BrickManager(brickGenerator);
-
         movementController = new BrickMovementController(boardState, brickRotator);
 
         score = new Score();
@@ -53,18 +52,14 @@ public class SimpleBoard implements Board {
 
         int[][] shape = brickRotator.getCurrentShape();
 
-        int shapeWidth = shape[0].length;
-
-        int startX = (width - shapeWidth) / 2;  // center horizontally
-        int startY = 0;                         // top
-
-        movementController.setCurrentOffset(new Point(startX, startY));
+        int startX = (width - shape[0].length) / 2;
+        movementController.setCurrentOffset(new Point(startX, 0));
 
         return MatrixOperations.intersect(
                 boardState.getMatrix(),
-                brickRotator.getCurrentShape(),
-                movementController.getCurrentOffset().x,
-                movementController.getCurrentOffset().y
+                shape,
+                startX,
+                0
         );
     }
 
@@ -75,11 +70,18 @@ public class SimpleBoard implements Board {
 
     @Override
     public ViewData getViewData() {
+        int[][] currentShape = brickRotator.getCurrentShape();
+        Point offset = movementController.getCurrentOffset();
+        int[][] nextShape = brickManager.getNextBrick().getShapeMatrix().get(0);
+
+        int ghostY = movementController.getGhostLandingY();
+
         return new ViewData(
-                brickRotator.getCurrentShape(),
-                movementController.getCurrentOffset().x,
-                movementController.getCurrentOffset().y,
-                brickManager.getNextBrick().getShapeMatrix().get(0)
+                currentShape,
+                offset.x,
+                offset.y,
+                nextShape,
+                ghostY
         );
     }
 
@@ -98,9 +100,7 @@ public class SimpleBoard implements Board {
     }
 
     @Override
-    public Score getScore() {
-        return score;
-    }
+    public Score getScore() { return score; }
 
     @Override
     public void newGame() {
@@ -111,31 +111,24 @@ public class SimpleBoard implements Board {
 
     @Override
     public DownData hardDrop() {
-
         int distance = 0;
 
-        // Move down until a collision stops us
         while (moveBrickDown()) {
             distance++;
         }
 
-        // Lock the piece
         mergeBrickToBackground();
 
-        // Clear rows
         ClearRow clearRow = clearRows();
         if (clearRow.getLinesRemoved() > 0) {
             score.add(clearRow.getScoreBonus());
         }
 
-        // Hard drop scoring bonus
         score.add(distance * 2);
 
-        // Spawn next brick
         boolean gameOver = createNewBrick();
 
-        ViewData viewData = getViewData();
-
-        return new DownData(clearRow, viewData);
+        return new DownData(clearRow, getViewData());
     }
 }
+

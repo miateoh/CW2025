@@ -53,27 +53,27 @@ public class GameController implements InputEventListener {
                 board.getScore().add(1);
             }
         }
+        // Updated to include ghost Y (via SimpleBoard's getViewData)
         return new DownData(clearRow, board.getViewData());
     }
 
     @Override
     public ViewData onLeftEvent(MoveEvent event) {
         board.moveBrickLeft();
-        return board.getViewData();
+        return board.getViewData();  // Now includes ghost Y
     }
 
     @Override
     public ViewData onRightEvent(MoveEvent event) {
         board.moveBrickRight();
-        return board.getViewData();
+        return board.getViewData();  // Now includes ghost Y
     }
 
     @Override
     public ViewData onRotateEvent(MoveEvent event) {
         board.rotateLeftBrick();
-        return board.getViewData();
+        return board.getViewData();  // Now includes ghost Y
     }
-
 
     @Override
     public void createNewGame() {
@@ -84,7 +84,8 @@ public class GameController implements InputEventListener {
     public DownData onHardDropEvent(MoveEvent event) {
         DownData data = board.hardDrop();
         viewGuiController.refreshGameBackground(board.getBoardMatrix());
-        return data;
+        // Updated to include ghost Y for new brick
+        return new DownData(data.getClearRow(), board.getViewData());
     }
 
 }
