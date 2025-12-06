@@ -3,6 +3,7 @@
 <?import javafx.scene.Group?>
 <?import javafx.scene.layout.*?>
 <?import java.net.URL?>
+<?import javafx.scene.control.Button?>
 
 <Pane fx:controller="com.tetris.ui.controllers.GuiController"
       xmlns:fx="http://javafx.com/fxml">
@@ -64,6 +65,45 @@
         <Label text="HOLD" layoutX="28" layoutY="8"
                style="-fx-text-fill: white; -fx-font-size: 14;" />
         <GridPane fx:id="holdPieceGrid" layoutX="22" layoutY="30"/>
+    </Pane>
+
+    <Pane fx:id="pauseOverlay"
+          visible="false"
+          mouseTransparent="true"
+          style="-fx-background-color: rgba(0,0,0,0.55);"
+          layoutX="0" layoutY="0"
+          prefWidth="400" prefHeight="500">
+
+        <Label text="PAUSED"
+               fx:id="pauseLabel"
+               layoutX="130" layoutY="200"
+               style="-fx-text-fill: white; -fx-font-size: 36; -fx-font-weight: bold;" />
+    </Pane>
+
+    <!-- PAUSE OVERLAY -->
+    <Pane fx:id="pauseOverlay"
+          visible="false"
+          layoutX="0" layoutY="0"
+          prefWidth="600" prefHeight="600"
+          style="-fx-background-color: rgba(0,0,0,0.35);">
+
+        <VBox alignment="CENTER" spacing="14"
+              layoutX="150" layoutY="120"
+              prefWidth="200" prefHeight="260"
+              style="-fx-background-color: #d9e1f2; -fx-border-color: #445; -fx-border-width: 3;">
+
+            <Label text="PAUSED"
+                   style="-fx-text-fill: #334; -fx-font-size: 22; -fx-font-weight: bold;"/>
+
+            <Button fx:id="resumeButton" text="Resume"
+                    style="-fx-font-size: 16; -fx-pref-width:140;" />
+
+            <Button fx:id="restartButton" text="Restart"
+                    style="-fx-font-size: 16; -fx-pref-width:140;" />
+
+            <Button fx:id="quitButton" text="Quit"
+                    style="-fx-font-size: 16; -fx-pref-width:140;" />
+        </VBox>
     </Pane>
 
     <Group fx:id="groupNotification" layoutX="14" layoutY="203">
