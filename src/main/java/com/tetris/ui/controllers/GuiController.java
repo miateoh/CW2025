@@ -92,9 +92,13 @@ public class GuiController implements Initializable {
         gameOverPanel.setVisible(false);
         pauseOverlay.setVisible(false);
 
+        // Wire up buttons
         resumeButton.setOnAction(e -> resumeGame());
         restartButton.setOnAction(e -> restartGame());
         quitButton.setOnAction(e -> System.exit(0));
+
+        // NEW: Wire up game over panel restart button
+        gameOverPanel.setOnRestart(this::restartGame);
 
         initializeNextPiecePanels();
         initializeHoldPieceDisplay();
@@ -108,15 +112,21 @@ public class GuiController implements Initializable {
 
         if (keyEvent.getCode() == KeyCode.P) {
             togglePause();
+            keyEvent.consume();
             return;
         }
 
+        // NEW: R key works even during game over
         if (keyEvent.getCode() == KeyCode.R) {
             restartGame();
+            keyEvent.consume();
             return;
         }
 
-        if (isPause.get() || isGameOver.get()) return;
+        if (isPause.get() || isGameOver.get()) {
+            keyEvent.consume();
+            return;
+        }
 
         switch (keyEvent.getCode()) {
 
@@ -183,6 +193,7 @@ public class GuiController implements Initializable {
         isPause.set(false);
         timeLine.play();
         pauseOverlay.setVisible(false);
+        gamePanel.requestFocus();
     }
 
     private void restartGame() {
@@ -408,7 +419,7 @@ public class GuiController implements Initializable {
     }
 
     // ===========================
-    // GAME OVER
+    // GAME LOGIC HOOKS
     // ===========================
 
     private void moveDown(MoveEvent e) {
@@ -438,6 +449,7 @@ public class GuiController implements Initializable {
         timeLine.stop();
         isGameOver.set(true);
         gameOverPanel.setVisible(true);
+        gameOverPanel.toFront();
     }
 }
 
