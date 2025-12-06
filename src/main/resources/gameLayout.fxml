@@ -80,6 +80,14 @@
                style="-fx-text-fill: white; -fx-font-size: 36; -fx-font-weight: bold;" />
     </Pane>
 
+    <Button fx:id="pauseButton"
+            text="PAUSE"
+            onAction="#togglePause"
+            layoutX="250"
+            layoutY="420"
+            prefWidth="120" prefHeight="35"
+            style="-fx-background-color: black; -fx-border-color: white; -fx-text-fill: white;" />
+
     <!-- PAUSE OVERLAY -->
     <Pane fx:id="pauseOverlay"
           visible="false"
@@ -88,9 +96,9 @@
           style="-fx-background-color: rgba(0,0,0,0.35);">
 
         <VBox alignment="CENTER" spacing="14"
-              layoutX="150" layoutY="120"
-              prefWidth="200" prefHeight="260"
-              style="-fx-background-color: #d9e1f2; -fx-border-color: #445; -fx-border-width: 3;">
+              layoutX="150" layoutY="150"
+              prefWidth="200" prefHeight="250"
+              style="-fx-background-color: #d9e1f2; -fx-border-color: #445; -fx-border-width: 3; -fx-background-radius: 6; -fx-border-radius: 6;">
 
             <Label text="PAUSED"
                    style="-fx-text-fill: #334; -fx-font-size: 22; -fx-font-weight: bold;"/>
