@@ -23,7 +23,7 @@ public class GameController implements InputEventListener {
     private Board board = new SimpleBoard(10, 25);
 
     private final GuiController viewGuiController;
-    private int previousLevel = 1;  // NEW: Track level changes
+    private int previousLevel = 1;
 
     public GameController(GuiController c) {
         viewGuiController = c;
@@ -31,11 +31,11 @@ public class GameController implements InputEventListener {
         viewGuiController.setEventListener(this);
         viewGuiController.initGameView(board.getBoardMatrix(), board.getViewData());
         viewGuiController.bindScore(board.getScore().scoreProperty());
-
-        // NEW: Bind level to UI
         viewGuiController.bindLevel(board.getLevel().levelProperty());
 
-        // NEW: Set initial speed
+        // NEW: Bind combo to UI
+        viewGuiController.bindCombo(board.getScore().comboProperty());
+
         viewGuiController.setGameSpeed(board.getLevel().getSpeedMs());
     }
 
@@ -51,12 +51,20 @@ public class GameController implements InputEventListener {
             if (clearRow.getLinesRemoved() > 0) {
                 board.getScore().add(clearRow.getScoreBonus());
 
-                // NEW: Check if level changed and adjust speed
+                // NEW: Add combo bonus and show notification
+                int comboBonus = board.getScore().addComboBonus();
+                if (comboBonus > 0) {
+                    viewGuiController.showComboNotification(
+                            board.getScore().getCombo(),
+                            comboBonus
+                    );
+                }
+
+                // Check if level changed and adjust speed
                 int currentLevel = board.getLevel().getCurrentLevel();
                 if (currentLevel > previousLevel) {
                     previousLevel = currentLevel;
                     int newSpeed = board.getLevel().getSpeedMs();
-                    System.out.println("LEVEL UP! New level: " + currentLevel + ", New speed: " + newSpeed + "ms");
                     viewGuiController.setGameSpeed(newSpeed);
                     viewGuiController.showLevelUpNotification(currentLevel);
                 }
@@ -98,8 +106,8 @@ public class GameController implements InputEventListener {
     @Override
     public void createNewGame() {
         board.newGame();
-        previousLevel = 1;  // NEW: Reset level tracking
-        viewGuiController.setGameSpeed(board.getLevel().getSpeedMs());  // NEW: Reset speed
+        previousLevel = 1;
+        viewGuiController.setGameSpeed(board.getLevel().getSpeedMs());
         viewGuiController.refreshGameBackground(board.getBoardMatrix());
     }
 
@@ -107,7 +115,26 @@ public class GameController implements InputEventListener {
     public DownData onHardDropEvent(MoveEvent event) {
         DownData data = board.hardDrop();
 
-        // NEW: Check for level-up after hard drop
+        // Check for level-up and combo after hard drop
+        if (data.getClearRow() != null && data.getClearRow().getLinesRemoved() > 0) {
+            int comboBonus = board.getScore().addComboBonus();
+            if (comboBonus > 0) {
+                viewGuiController.showComboNotification(
+                        board.getScore().getCombo(),
+                        comboBonus
+                );
+            }
+        }
+
+        // NEW: Add combo bonus and show notification
+        int comboBonus = board.getScore().addComboBonus();
+        if (comboBonus > 0) {
+            viewGuiController.showComboNotification(
+                    board.getScore().getCombo(),
+                    comboBonus
+            );
+        }
+
         int currentLevel = board.getLevel().getCurrentLevel();
         if (currentLevel > previousLevel) {
             previousLevel = currentLevel;

@@ -24,6 +24,8 @@
 
     <Label fx:id="levelLabel" text="LEVEL: 1" styleClass="levelLabel"/>
 
+    <Label fx:id="comboLabel" text="COMBO: 0x" styleClass="comboLabel"/>
+
     <GridPane fx:id="brickPanel" vgap="1" hgap="1" />
 
     <BorderPane styleClass="gameBoard" fx:id="gameBoard">

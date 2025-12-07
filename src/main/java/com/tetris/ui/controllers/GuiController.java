@@ -73,6 +73,8 @@ public class GuiController implements Initializable {
     @FXML private Group groupNotification;
     @FXML private GameOverPanel gameOverPanel;
 
+    @FXML private Label comboLabel;
+
     private Rectangle[][][] nextPieceRectangles;
     private Rectangle[][] displayMatrix;
     private Rectangle[][] rectangles;
@@ -492,6 +494,28 @@ public class GuiController implements Initializable {
         isGameOver.set(true);
         gameOverPanel.setVisible(true);
         gameOverPanel.toFront();
+    }
+
+    public void bindCombo(IntegerProperty comboProperty) {
+        comboProperty.addListener((o, oldVal, newVal) -> {
+            if (newVal.intValue() > 1) {
+                comboLabel.setText("COMBO: " + newVal + "x");
+                comboLabel.setVisible(true);
+            } else {
+                comboLabel.setVisible(false);
+            }
+        });
+        // Set initial state
+        comboLabel.setVisible(false);
+    }
+
+    public void showComboNotification(int comboCount, int bonusPoints) {
+        NotificationPanel notification = new NotificationPanel(
+                "COMBO x" + comboCount + "! (+" + bonusPoints + ")"
+        );
+        notification.setTranslateY(-150); // Position differently from score
+        groupNotification.getChildren().add(notification);
+        notification.showScore(groupNotification.getChildren());
     }
 }
 
