@@ -33,10 +33,14 @@ public class GameController implements InputEventListener {
         viewGuiController.bindScore(board.getScore().scoreProperty());
         viewGuiController.bindLevel(board.getLevel().levelProperty());
 
+
         // NEW: Bind combo to UI
         viewGuiController.bindCombo(board.getScore().comboProperty());
 
         viewGuiController.setGameSpeed(board.getLevel().getSpeedMs());
+
+        //Bind lines cleared to UI
+        viewGuiController.bindLines(board.getLevel().linesClearedProperty());
     }
 
     @Override

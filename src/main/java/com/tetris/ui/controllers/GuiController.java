@@ -74,6 +74,8 @@ public class GuiController implements Initializable {
     @FXML private GameOverPanel gameOverPanel;
 
     @FXML private Label comboLabel;
+    @FXML private Label linesLabel;  // NEW: Lines display
+
 
     private Rectangle[][][] nextPieceRectangles;
     private Rectangle[][] displayMatrix;
@@ -453,10 +455,10 @@ public class GuiController implements Initializable {
 
     public void bindLevel(IntegerProperty levelProperty) {
         levelProperty.addListener((o, oldVal, newVal) ->
-                levelLabel.setText("LEVEL: " + newVal)
+                levelLabel.setText(String.valueOf(newVal))  // Just the number
         );
         // Set initial value
-        levelLabel.setText("LEVEL: " + levelProperty.get());
+        levelLabel.setText(String.valueOf(levelProperty.get()));
     }
 
     public void setGameSpeed(int speedMs) {
@@ -516,6 +518,14 @@ public class GuiController implements Initializable {
         notification.setTranslateY(-150); // Position differently from score
         groupNotification.getChildren().add(notification);
         notification.showScore(groupNotification.getChildren());
+    }
+
+    public void bindLines(IntegerProperty linesProperty) {
+        linesProperty.addListener((o, oldVal, newVal) ->
+                linesLabel.setText(String.valueOf(newVal))
+        );
+        // Set initial value
+        linesLabel.setText(String.valueOf(linesProperty.get()));
     }
 }
 

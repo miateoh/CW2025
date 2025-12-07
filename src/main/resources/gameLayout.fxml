@@ -22,9 +22,37 @@
                style="-fx-text-fill: white; -fx-font-size: 16; -fx-font-weight: bold;" />
     </Pane>
 
-    <Label fx:id="levelLabel" text="LEVEL: 1" styleClass="levelLabel"/>
+    <Pane fx:id="infoPanel"
+          layoutX="250"
+          layoutY="60"
+          prefWidth="120"
+          prefHeight="80"
+          style="-fx-background-color: rgba(0,0,0,0.55); -fx-border-color: white; -fx-border-width: 2;">
 
-    <Label fx:id="comboLabel" text="COMBO: 0x" styleClass="comboLabel"/>
+        <Label text="LEVEL"
+               layoutX="40"
+               layoutY="5"
+               style="-fx-text-fill: white; -fx-font-size: 12; -fx-font-weight: bold;" />
+
+        <Label fx:id="levelLabel"
+               text="1"
+               layoutX="50"
+               layoutY="20"
+               style="-fx-text-fill: white; -fx-font-size: 20; -fx-font-weight: bold;" />
+
+        <Label text="LINES"
+               layoutX="40"
+               layoutY="45"
+               style="-fx-text-fill: white; -fx-font-size: 12; -fx-font-weight: bold;" />
+
+        <Label fx:id="linesLabel"
+               text="0"
+               layoutX="50"
+               layoutY="60"
+               style="-fx-text-fill: white; -fx-font-size: 20; -fx-font-weight: bold;" />
+
+        <Label fx:id="comboLabel" text="COMBO: 0x" styleClass="comboLabel"/>
+    </Pane>
 
     <GridPane fx:id="brickPanel" vgap="1" hgap="1" />
 
@@ -37,7 +65,7 @@
     <!-- NEXT PANEL (top-right) - UPDATED FOR 3 PIECES -->
     <Pane fx:id="nextPiecePane"
           layoutX="250"
-          layoutY="70"
+          layoutY="150"
           prefWidth="120" prefHeight="240"
           style="-fx-background-color: rgba(0, 0, 0, 0.55); -fx-border-color: white; -fx-border-width: 2;">
 
@@ -62,8 +90,8 @@
 
     <!-- HOLD PANEL (below NEXT) -->
     <Pane fx:id="holdPiecePane"
-          layoutX="250"
-          layoutY="320"
+          layoutX="385"
+          layoutY="15"
           prefWidth="100" prefHeight="90"
           style="-fx-background-color: rgba(0, 0, 0, 0.55); -fx-border-color: white; -fx-border-width: 2;">
         <Label text="HOLD" layoutX="28" layoutY="8"
@@ -87,9 +115,9 @@
     <Button fx:id="pauseButton"
             text="PAUSE"
             onAction="#togglePause"
-            layoutX="250"
-            layoutY="420"
-            prefWidth="120" prefHeight="35"
+            layoutX="385"
+            layoutY="120"
+            prefWidth="100" prefHeight="35"
             style="-fx-background-color: black; -fx-border-color: white; -fx-text-fill: white;" />
 
     <!-- PAUSE OVERLAY -->
