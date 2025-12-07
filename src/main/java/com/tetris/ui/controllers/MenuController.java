@@ -19,8 +19,7 @@ public class MenuController {
         startButton.setOnAction(e -> startGame());
         quitButton.setOnAction(e -> System.exit(0));
 
-        scoresButton.setOnAction(e ->
-        );
+        scoresButton.setOnAction(e -> openScores());
     }
 
     private void startGame() {
@@ -43,4 +42,21 @@ public class MenuController {
             ex.printStackTrace();
         }
     }
+
+    private void openScores() {
+        try {
+            FXMLLoader loader = new FXMLLoader(
+                    Main.class.getClassLoader().getResource("high_scores.fxml")
+            );
+
+            Parent root = loader.load();
+
+            Stage stage = (Stage) startButton.getScene().getWindow();
+            stage.setScene(new Scene(root, 700, 700));
+
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+    }
+
 }
