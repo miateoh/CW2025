@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import java.net.URL?>
+
+<StackPane xmlns:fx="http://javafx.com/fxml"
+           fx:controller="com.tetris.ui.controllers.MenuController"
+           style="-fx-background-color: rgba(0,0,0,0.75);">
+
+    <stylesheets>
+        <URL value="@window_style.css"/>
+    </stylesheets>
+
+    <VBox alignment="CENTER" spacing="25">
+
+        <Label text="TETRIS"
+               style="-fx-text-fill: white; -fx-font-size: 48; -fx-font-weight: bold;"/>
+
+        <Button text="START GAME"
+                fx:id="startButton"
+                style="-fx-font-size: 22; -fx-text-fill: white; -fx-background-color: black;
+                       -fx-border-color: white; -fx-border-width: 2; -fx-padding: 10 40;"/>
+
+        <Button text="HIGH SCORES"
+                fx:id="scoresButton"
+                style="-fx-font-size: 18; -fx-text-fill: white; -fx-background-color: black;
+                       -fx-border-color: white; -fx-border-width: 2; -fx-padding: 8 30;"/>
+
+        <Button text="QUIT"
+                fx:id="quitButton"
+                style="-fx-font-size: 18; -fx-text-fill: white; -fx-background-color: black;
+                       -fx-border-color: white; -fx-border-width: 2; -fx-padding: 8 30;"/>
+
+    </VBox>
+
+</StackPane>
