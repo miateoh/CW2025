@@ -21,6 +21,7 @@ import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.animation.FadeTransition;
 
+import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -46,6 +47,10 @@ import javafx.util.Duration;
 import java.net.URL;
 import java.util.ResourceBundle;
 import java.util.List;
+import javafx.scene.transform.Scale;
+import javafx.scene.layout.StackPane;
+import javafx.stage.Stage;
+import javafx.application.Platform;
 
 public class GuiController implements Initializable {
 
@@ -75,6 +80,8 @@ public class GuiController implements Initializable {
 
     @FXML private Label comboLabel;
     @FXML private Label linesLabel;
+    @FXML private Pane gameContainer;
+    @FXML private StackPane rootPane;
 
     private Rectangle[][][] nextPieceRectangles;
     private Rectangle[][] displayMatrix;
@@ -87,12 +94,11 @@ public class GuiController implements Initializable {
     private final BooleanProperty isGameOver = new SimpleBooleanProperty(false);
 
     private HighScoreManager highScoreManager;
+    private double baseWidth = 500;
+    private double baseHeight = 500;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        System.out.println("GUI Controller Initializing...");
-        System.out.println("groupNotification is null? " + (groupNotification == null));
-        System.out.println("gameOverPanel is null? " + (gameOverPanel == null));
 
         gamePanel.setFocusTraversable(true);
         gamePanel.setOnKeyPressed(this::handleKeyPress);
@@ -113,8 +119,21 @@ public class GuiController implements Initializable {
         gameOverPanel.setOnRestart(this::restartGame);
         gameOverPanel.setOnResetScores(this::resetHighScores);
 
+        addAutoScaling();
+
         initializeNextPiecePanels();
         initializeHoldPieceDisplay();
+
+        Platform.runLater(() -> {
+            StackPane.setAlignment(gameContainer, null);
+
+            Stage stage = (Stage) rootPane.getScene().getWindow();
+            stage.fullScreenProperty().addListener((obs, oldV, newV) -> {
+                Platform.runLater(this::updatePosition);
+            });
+
+            updatePosition();
+        });
     }
 
     // ===========================
@@ -289,6 +308,117 @@ public class GuiController implements Initializable {
                     r.setArcHeight(9);
                     holdPieceGrid.add(r, x, y);
                 }
+    }
+
+    private void addAutoScaling() {
+        rootPane.widthProperty().addListener((obs, oldWidth, newWidth) -> {
+            updatePosition();
+        });
+
+        rootPane.heightProperty().addListener((obs, oldHeight, newHeight) -> {
+            updatePosition();
+        });
+
+        rootPane.sceneProperty().addListener((obs, oldScene, newScene) -> {
+            if (newScene != null) {
+                Platform.runLater(this::updatePosition);
+            }
+        });
+
+        gameContainer.getTransforms().clear();
+    }
+
+    private void updateScaleAndPosition(Scale scale) {
+        double containerW = gameContainer.getPrefWidth();  // 500
+        double containerH = gameContainer.getPrefHeight(); // 500
+
+        double rootW = rootPane.getWidth();
+        double rootH = rootPane.getHeight();
+
+        if (rootW == 0 || rootH == 0) return;
+
+        // Calculate scale factor
+        double scaleFactor = Math.min(
+                rootW / containerW,
+                rootH / containerH
+        );
+
+        scale.setX(scaleFactor);
+        scale.setY(scaleFactor);
+
+        // Calculate scaled dimensions
+        double scaledW = containerW * scaleFactor;
+        double scaledH = containerH * scaleFactor;
+
+        // Center the scaled container
+        double x = (rootW - scaledW) / 2;
+        double y = (rootH - scaledH) / 2;
+
+        gameContainer.setLayoutX(x);
+        gameContainer.setLayoutY(y);
+    }
+
+    private void updatePosition() {
+        double containerW = 500;  // Base size
+        double containerH = 500;
+
+        double rootW = rootPane.getWidth();
+        double rootH = rootPane.getHeight();
+
+        if (rootW == 0 || rootH == 0) return;
+
+        // Calculate scale
+        double scaleX = rootW / containerW;
+        double scaleY = rootH / containerH;
+        double scale = Math.min(scaleX, scaleY);
+
+        // Apply scale using setScaleX/Y instead of Transform
+        gameContainer.setScaleX(scale);
+        gameContainer.setScaleY(scale);
+
+        // Calculate position - accounting for how setScale works
+        // setScale scales from the CENTER of the node by default
+        double scaledW = containerW * scale;
+        double scaledH = containerH * scale;
+
+        // Position so the CENTER of gameContainer is at the CENTER of rootPane
+        double centerX = rootW / 2;
+        double centerY = rootH / 2;
+
+        // layoutX/Y positions the TOP-LEFT corner, so we need to offset
+        // by half the UNSCALED container size (since scale is from center)
+        gameContainer.setLayoutX(centerX - containerW / 2);
+        gameContainer.setLayoutY(centerY - containerH / 2);
+    }
+
+    private void applyScaleAndCenter(Scale scale) {
+        double containerWidth = gameContainer.getPrefWidth();   // 500
+        double containerHeight = gameContainer.getPrefHeight(); // 500
+
+        double availableWidth = rootPane.getWidth();
+        double availableHeight = rootPane.getHeight();
+
+        if (availableWidth == 0 || availableHeight == 0) return;
+
+        // Calculate scale factor
+        double scaleFactor = Math.min(
+                availableWidth / containerWidth,
+                availableHeight / containerHeight
+        );
+
+        scale.setX(scaleFactor);
+        scale.setY(scaleFactor);
+
+        // Calculate scaled dimensions
+        double scaledW = containerWidth * scaleFactor;
+        double scaledH = containerHeight * scaleFactor;
+
+        // Center the container
+        double x = (availableWidth - scaledW) / 2;
+        double y = (availableHeight - scaledH) / 2;
+
+        gameContainer.setLayoutX(x);
+        gameContainer.setLayoutY(y);
     }
 
     // ===========================

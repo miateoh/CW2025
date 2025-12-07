@@ -1,6 +1,10 @@
 .root {
     -fx-background-image: url("background_image.png");
+    -fx-background-repeat: repeat;
+    -fx-background-size: auto;
+    -fx-background-position: center;
 }
+
 
 .nextBrick {
     -fx-border-width: 2px;

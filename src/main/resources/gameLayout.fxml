@@ -1,20 +1,31 @@
-<?import com.tetris.ui.views.GameOverPanel?>
-<?import javafx.scene.control.Label?>
-<?import javafx.scene.Group?>
-<?import javafx.scene.layout.*?>
-<?import java.net.URL?>
-<?import javafx.scene.control.Button?>
+<?xml version="1.0" encoding="UTF-8"?>
 
-<Pane fx:controller="com.tetris.ui.controllers.GuiController"
-      xmlns:fx="http://javafx.com/fxml"
-      prefWidth="600" prefHeight="600">
+        <?import javafx.scene.layout.*?>
+        <?import javafx.scene.control.*?>
+        <?import javafx.scene.Group?>
+        <?import com.tetris.ui.views.GameOverPanel?>
+        <?import java.net.URL?>
+        <?import javafx.geometry.Insets?>
 
-    <!-- SCORE PANEL (top-center above NEXT + HOLD) -->
+<StackPane xmlns:fx="http://javafx.com/fxml"
+           fx:controller="com.tetris.ui.controllers.GuiController"
+           fx:id="rootPane"
+           styleClass="root">
+
+<stylesheets>
+    <URL value="@window_style.css"/>
+</stylesheets>
+
+<Pane fx:id="gameContainer"
+      prefWidth="500" prefHeight="500"
+      maxWidth="500" maxHeight="500"
+      minWidth="500" minHeight="500"
+      style="-fx-background-color: rgba(0,0,0,0.20);">
+
+    <!-- SCORE PANEL -->
     <Pane fx:id="scorePanel"
-          layoutX="250"
-          layoutY="15"
-          prefWidth="120"
-          prefHeight="40"
+          layoutX="250" layoutY="15"
+          prefWidth="120" prefHeight="40"
           style="-fx-background-color: rgba(0,0,0,0.55); -fx-border-color: white; -fx-border-width: 2;">
         <Label fx:id="scoreLabel"
                text="SCORE: 0"
@@ -23,80 +34,55 @@
                style="-fx-text-fill: white; -fx-font-size: 16; -fx-font-weight: bold;" />
     </Pane>
 
+    <!-- INFO PANEL -->
     <Pane fx:id="infoPanel"
-          layoutX="250"
-          layoutY="60"
-          prefWidth="120"
-          prefHeight="80"
+          layoutX="250" layoutY="60"
+          prefWidth="120" prefHeight="80"
           style="-fx-background-color: rgba(0,0,0,0.55); -fx-border-color: white; -fx-border-width: 2;">
 
-        <Label text="LEVEL"
-               layoutX="40"
-               layoutY="5"
-               style="-fx-text-fill: white; -fx-font-size: 12; -fx-font-weight: bold;" />
-
-        <Label fx:id="levelLabel"
-               text="1"
-               layoutX="50"
-               layoutY="20"
-               style="-fx-text-fill: white; -fx-font-size: 20; -fx-font-weight: bold;" />
-
-        <Label text="LINES"
-               layoutX="40"
-               layoutY="45"
-               style="-fx-text-fill: white; -fx-font-size: 12; -fx-font-weight: bold;" />
-
-        <Label fx:id="linesLabel"
-               text="0"
-               layoutX="50"
-               layoutY="60"
-               style="-fx-text-fill: white; -fx-font-size: 20; -fx-font-weight: bold;" />
-
-        <Label fx:id="comboLabel" text="COMBO: 0x" styleClass="comboLabel"/>
+        <Label text="LEVEL" layoutX="40" layoutY="5" style="-fx-text-fill: white;"/>
+        <Label fx:id="levelLabel" text="1" layoutX="50" layoutY="20"
+               style="-fx-text-fill: white; -fx-font-size: 20;"/>
+        <Label text="LINES" layoutX="40" layoutY="45" style="-fx-text-fill: white;"/>
+        <Label fx:id="linesLabel" text="0" layoutX="50" layoutY="60"
+               style="-fx-text-fill: white; -fx-font-size: 20;"/>
     </Pane>
 
-    <GridPane fx:id="brickPanel" vgap="1" hgap="1" />
+    <Label fx:id="comboLabel"
+           text="COMBO: 0x"
+           visible="false"
+           layoutX="250" layoutY="145"
+           style="-fx-text-fill: #FFD700; -fx-font-size: 14;"/>
 
-    <BorderPane styleClass="gameBoard" fx:id="gameBoard">
+    <GridPane fx:id="brickPanel" vgap="1" hgap="1"/>
+
+    <BorderPane fx:id="gameBoard" styleClass="gameBoard">
         <center>
-            <GridPane fx:id="gamePanel" hgap="1" vgap="1" layoutY="30" layoutX="40"/>
+            <GridPane fx:id="gamePanel" hgap="1" vgap="1" layoutX="40" layoutY="30"/>
         </center>
     </BorderPane>
 
-    <!-- NEXT PANEL (top-right) - UPDATED FOR 3 PIECES -->
+    <!-- NEXT PIECES PANEL -->
     <Pane fx:id="nextPiecePane"
-          layoutX="250"
-          layoutY="150"
+          layoutX="250" layoutY="170"
           prefWidth="120" prefHeight="240"
-          style="-fx-background-color: rgba(0, 0, 0, 0.55); -fx-border-color: white; -fx-border-width: 2;">
+          style="-fx-background-color: rgba(0,0,0,0.55); -fx-border-color: white;">
 
-        <Label text="NEXT" layoutX="42" layoutY="8"
-               style="-fx-text-fill: white; -fx-font-size: 14;" />
+        <Label text="NEXT" layoutX="40" layoutY="8" style="-fx-text-fill: white;"/>
 
-        <!-- Three next pieces stacked vertically -->
-        <VBox layoutX="10" layoutY="30" spacing="-2" alignment="TOP_CENTER">
-            <GridPane fx:id="nextPiecePanel1" hgap="1" vgap="1"
-                      minWidth="80" minHeight="80"
-                      prefWidth="80" prefHeight="80"/>
-
-            <GridPane fx:id="nextPiecePanel2" hgap="1" vgap="1"
-                      minWidth="80" minHeight="80"
-                      prefWidth="80" prefHeight="80"/>
-
-            <GridPane fx:id="nextPiecePanel3" hgap="1" vgap="1"
-                      minWidth="80" minHeight="80"
-                      prefWidth="80" prefHeight="80"/>
+        <VBox layoutX="10" layoutY="30" spacing="-2">
+            <GridPane fx:id="nextPiecePanel1" hgap="1" vgap="1"/>
+            <GridPane fx:id="nextPiecePanel2" hgap="1" vgap="1"/>
+            <GridPane fx:id="nextPiecePanel3" hgap="1" vgap="1"/>
         </VBox>
     </Pane>
 
-    <!-- HOLD PANEL (below NEXT) -->
+    <!-- HOLD PANEL -->
     <Pane fx:id="holdPiecePane"
-          layoutX="385"
-          layoutY="15"
+          layoutX="385" layoutY="15"
           prefWidth="100" prefHeight="90"
-          style="-fx-background-color: rgba(0, 0, 0, 0.55); -fx-border-color: white; -fx-border-width: 2;">
-        <Label text="HOLD" layoutX="28" layoutY="8"
-               style="-fx-text-fill: white; -fx-font-size: 14;" />
+          style="-fx-background-color: rgba(0,0,0,0.55); -fx-border-color: white;">
+        <Label text="HOLD" layoutX="30" layoutY="8" style="-fx-text-fill: white;"/>
         <GridPane fx:id="holdPieceGrid" layoutX="22" layoutY="30"/>
     </Pane>
 
@@ -106,41 +92,28 @@
             layoutX="385"
             layoutY="120"
             prefWidth="100" prefHeight="35"
-            style="-fx-background-color: black; -fx-border-color: white; -fx-text-fill: white;" />
+            style="-fx-background-color: black; -fx-border-color: white; -fx-text-fill: white;"/>
 
     <!-- PAUSE OVERLAY -->
     <Pane fx:id="pauseOverlay"
+          prefWidth="500" prefHeight="500"
           visible="false"
-          layoutX="0" layoutY="0"
-          prefWidth="600" prefHeight="600"
-          style="-fx-background-color: rgba(0,0,0,0.35);">
+          style="-fx-background-color: rgba(0,0,0,0.7);">
 
-        <VBox alignment="CENTER" spacing="14"
-              layoutX="150" layoutY="150"
+        <VBox alignment="CENTER" spacing="14" layoutX="150" layoutY="150"
               prefWidth="200" prefHeight="250"
-              style="-fx-background-color: #d9e1f2; -fx-border-color: #445; -fx-border-width: 3; -fx-background-radius: 6; -fx-border-radius: 6;">
-
-            <Label text="PAUSED"
-                   style="-fx-text-fill: #334; -fx-font-size: 22; -fx-font-weight: bold;"/>
-
-            <Button fx:id="resumeButton" text="Resume"
-                    style="-fx-font-size: 16; -fx-pref-width:140;" />
-
-            <Button fx:id="restartButton" text="Restart"
-                    style="-fx-font-size: 16; -fx-pref-width:140;" />
-
-            <Button fx:id="quitButton" text="Quit"
-                    style="-fx-font-size: 16; -fx-pref-width:140;" />
+              style="-fx-background-color: #d9e1f2; -fx-border-color: #445;">
+            <Label text="PAUSED" style="-fx-font-size: 22;"/>
+            <Button fx:id="resumeButton" text="Resume"/>
+            <Button fx:id="restartButton" text="Restart"/>
+            <Button fx:id="quitButton" text="Quit"/>
         </VBox>
     </Pane>
 
-    <!-- NOTIFICATION CONTAINER (for score/combo popups) -->
     <Group fx:id="groupNotification" layoutX="20" layoutY="20"/>
 
-    <!-- GAME OVER PANEL (separate container) -->
-    <GameOverPanel fx:id="gameOverPanel" visible="false" layoutX="0" layoutY="0"/>
+    <GameOverPanel fx:id="gameOverPanel" visible="false"
+                   prefWidth="500" prefHeight="500"/>
 
-    <stylesheets>
-        <URL value="@window_style.css"/>
-    </stylesheets>
 </Pane>
+</StackPane>
