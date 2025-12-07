@@ -62,6 +62,7 @@ public class GuiController implements Initializable {
     @FXML private GridPane nextPiecePanel3;
 
     @FXML private Label scoreLabel;
+    @FXML private Label levelLabel;  // NEW: Level display
 
     @FXML private Pane pauseOverlay;
     @FXML private Button pauseButton;
@@ -97,7 +98,7 @@ public class GuiController implements Initializable {
         restartButton.setOnAction(e -> restartGame());
         quitButton.setOnAction(e -> System.exit(0));
 
-        // NEW: Wire up game over panel restart button
+        // Wire up game over panel restart button
         gameOverPanel.setOnRestart(this::restartGame);
 
         initializeNextPiecePanels();
@@ -116,7 +117,6 @@ public class GuiController implements Initializable {
             return;
         }
 
-        // NEW: R key works even during game over
         if (keyEvent.getCode() == KeyCode.R) {
             restartGame();
             keyEvent.consume();
@@ -444,6 +444,48 @@ public class GuiController implements Initializable {
                 scoreLabel.setText("SCORE: " + newVal)
         );
     }
+
+    // ===========================
+    // NEW: LEVEL SYSTEM
+    // ===========================
+
+    public void bindLevel(IntegerProperty levelProperty) {
+        levelProperty.addListener((o, oldVal, newVal) ->
+                levelLabel.setText("LEVEL: " + newVal)
+        );
+        // Set initial value
+        levelLabel.setText("LEVEL: " + levelProperty.get());
+    }
+
+    public void setGameSpeed(int speedMs) {
+        if (timeLine != null) {
+            boolean wasPlaying = timeLine.getStatus() == Timeline.Status.RUNNING;
+            timeLine.stop();
+
+            timeLine = new Timeline(new KeyFrame(
+                    Duration.millis(speedMs),
+                    t -> moveDown(new MoveEvent(EventType.DOWN, EventSource.THREAD))
+            ));
+
+            timeLine.setCycleCount(Timeline.INDEFINITE);
+
+            // Resume if it was playing before
+            if (wasPlaying && !isPause.get() && !isGameOver.get()) {
+                timeLine.play();
+            }
+        }
+    }
+
+    public void showLevelUpNotification(int newLevel) {
+        NotificationPanel notification = new NotificationPanel("LEVEL " + newLevel + "!");
+        groupNotification.getChildren().add(notification);
+        notification.setLayoutY(100);
+        notification.showScore(groupNotification.getChildren());
+    }
+
+    // ===========================
+    // GAME OVER
+    // ===========================
 
     public void gameOver() {
         timeLine.stop();

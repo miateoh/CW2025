@@ -4,6 +4,7 @@ import com.tetris.ui.views.ViewData;
 import com.tetris.game.board.*;
 import com.tetris.game.bricks.*;
 import com.tetris.game.data.Score;
+import com.tetris.game.data.Level;
 
 import java.awt.*;
 import java.util.ArrayList;
@@ -21,12 +22,13 @@ public class SimpleBoard implements Board {
     private final BrickManager brickManager;
 
     private final Score score;
+    private final Level level;  // NEW: Level management
 
     // Hold piece variables
     private Brick heldBrick = null;
-    private boolean canHold = true;  // Resets when piece locks
+    private boolean canHold = true;
 
-    // NEW: Queue for multiple next pieces
+    // Queue for multiple next pieces
     private final List<Brick> nextBricksQueue = new ArrayList<>();
     private static final int NEXT_PIECES_COUNT = 3;
 
@@ -42,36 +44,29 @@ public class SimpleBoard implements Board {
         movementController = new BrickMovementController(boardState, brickRotator);
 
         score = new Score();
+        level = new Level();  // NEW: Initialize level
 
-        // NEW: Initialize the next pieces queue
         initializeNextPiecesQueue();
     }
 
-    // NEW: Initialize the queue with 3 bricks
     private void initializeNextPiecesQueue() {
         nextBricksQueue.clear();
         for (int i = 0; i < NEXT_PIECES_COUNT; i++) {
-            // Use moveToNextBrick() instead of generateNewBrick()
             nextBricksQueue.add(brickManager.moveToNextBrick());
         }
     }
 
-    // NEW: Get the next brick from queue and refill
     private Brick getNextBrickFromQueue() {
         if (nextBricksQueue.isEmpty()) {
             initializeNextPiecesQueue();
         }
 
-        // Take the first brick from queue
         Brick nextBrick = nextBricksQueue.remove(0);
-
-        // Add a new brick to the end to keep queue size
         nextBricksQueue.add(brickManager.moveToNextBrick());
 
         return nextBrick;
     }
 
-    // NEW: Get preview of next bricks without removing them
     private List<Brick> getNextBricksPreview(int count) {
         List<Brick> preview = new ArrayList<>();
         for (int i = 0; i < Math.min(count, nextBricksQueue.size()); i++) {
@@ -82,7 +77,6 @@ public class SimpleBoard implements Board {
 
     @Override
     public boolean createNewBrick() {
-        // Use the queue to get next brick
         Brick brick = getNextBrickFromQueue();
         brickRotator.setBrick(brick);
 
@@ -94,7 +88,6 @@ public class SimpleBoard implements Board {
 
         movementController.setCurrentOffset(new Point(startX, startY));
 
-        // Reset hold ability for new piece
         canHold = true;
 
         return MatrixOperations.intersect(
@@ -110,7 +103,6 @@ public class SimpleBoard implements Board {
         int[][] currentShape = brickRotator.getCurrentShape();
         Point offset = movementController.getCurrentOffset();
 
-        // NEW: Get list of next brick shapes (for 3 pieces)
         List<int[][]> nextBrickShapes = new ArrayList<>();
         List<Brick> nextBricks = getNextBricksPreview(NEXT_PIECES_COUNT);
 
@@ -121,12 +113,11 @@ public class SimpleBoard implements Board {
         int[][] holdBrickShape = heldBrick != null ? heldBrick.getShapeMatrix().get(0) : null;
         int ghostY = movementController.getGhostLandingY();
 
-        // NEW: Use the constructor that accepts List<int[][]>
         return new ViewData(
                 currentShape,
                 offset.x,
                 offset.y,
-                nextBrickShapes,  // Pass List instead of single array
+                nextBrickShapes,
                 holdBrickShape,
                 ghostY
         );
@@ -136,31 +127,36 @@ public class SimpleBoard implements Board {
     public void newGame() {
         boardState.reset();
         score.reset();
-        heldBrick = null;  // Clear held piece
+        level.reset();  // NEW: Reset level
+        heldBrick = null;
         canHold = true;
 
-        // NEW: Reset the next pieces queue
         initializeNextPiecesQueue();
         createNewBrick();
     }
 
-    // ============ REST OF THE CODE STAYS THE SAME ============
+    @Override
+    public boolean moveBrickDown() {
+        return movementController.moveDown();
+    }
 
     @Override
-    public boolean moveBrickDown() { return movementController.moveDown(); }
+    public boolean moveBrickLeft() {
+        return movementController.moveLeft();
+    }
 
     @Override
-    public boolean moveBrickLeft() { return movementController.moveLeft(); }
+    public boolean moveBrickRight() {
+        return movementController.moveRight();
+    }
 
     @Override
-    public boolean moveBrickRight() { return movementController.moveRight(); }
-
-    @Override
-    public boolean rotateLeftBrick() { return movementController.rotateLeft(); }
+    public boolean rotateLeftBrick() {
+        return movementController.rotateLeft();
+    }
 
     @Override
     public boolean holdPiece() {
-        // Can only hold once per piece
         if (!canHold) {
             return false;
         }
@@ -168,15 +164,12 @@ public class SimpleBoard implements Board {
         Brick currentBrick = brickRotator.getBrick();
 
         if (heldBrick == null) {
-            // First hold - store current and spawn next
             heldBrick = currentBrick;
             createNewBrick();
         } else {
-            // Swap current with held
             Brick temp = heldBrick;
             heldBrick = currentBrick;
 
-            // Spawn the previously held brick
             brickRotator.setBrick(temp);
             int[][] shape = brickRotator.getCurrentShape();
             int shapeWidth = shape[0].length;
@@ -187,7 +180,6 @@ public class SimpleBoard implements Board {
             movementController.setCurrentOffset(new Point(startX, startY));
         }
 
-        // Disable hold until piece locks
         canHold = false;
         return true;
     }
@@ -208,12 +200,31 @@ public class SimpleBoard implements Board {
 
     @Override
     public ClearRow clearRows() {
-        return boardState.clearRows();
+        ClearRow clearRow = boardState.clearRows();
+
+        // NEW: Track lines cleared for level progression
+        if (clearRow.getLinesRemoved() > 0) {
+            int previousLevel = level.getCurrentLevel();
+            level.addLines(clearRow.getLinesRemoved());
+
+            // Award level-up bonus if leveled up
+            if (level.justLeveledUp(previousLevel)) {
+                score.add(level.getLevelUpBonus());
+            }
+        }
+
+        return clearRow;
     }
 
     @Override
     public Score getScore() {
         return score;
+    }
+
+    // NEW: Get level for UI and speed adjustments
+    @Override
+    public Level getLevel() {
+        return level;
     }
 
     @Override

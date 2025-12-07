@@ -23,6 +23,7 @@ public class GameController implements InputEventListener {
     private Board board = new SimpleBoard(10, 25);
 
     private final GuiController viewGuiController;
+    private int previousLevel = 1;  // NEW: Track level changes
 
     public GameController(GuiController c) {
         viewGuiController = c;
@@ -30,18 +31,37 @@ public class GameController implements InputEventListener {
         viewGuiController.setEventListener(this);
         viewGuiController.initGameView(board.getBoardMatrix(), board.getViewData());
         viewGuiController.bindScore(board.getScore().scoreProperty());
+
+        // NEW: Bind level to UI
+        viewGuiController.bindLevel(board.getLevel().levelProperty());
+
+        // NEW: Set initial speed
+        viewGuiController.setGameSpeed(board.getLevel().getSpeedMs());
     }
 
     @Override
     public DownData onDownEvent(MoveEvent event) {
         boolean canMove = board.moveBrickDown();
         ClearRow clearRow = null;
+
         if (!canMove) {
             board.mergeBrickToBackground();
             clearRow = board.clearRows();
+
             if (clearRow.getLinesRemoved() > 0) {
                 board.getScore().add(clearRow.getScoreBonus());
+
+                // NEW: Check if level changed and adjust speed
+                int currentLevel = board.getLevel().getCurrentLevel();
+                if (currentLevel > previousLevel) {
+                    previousLevel = currentLevel;
+                    int newSpeed = board.getLevel().getSpeedMs();
+                    System.out.println("LEVEL UP! New level: " + currentLevel + ", New speed: " + newSpeed + "ms");
+                    viewGuiController.setGameSpeed(newSpeed);
+                    viewGuiController.showLevelUpNotification(currentLevel);
+                }
             }
+
             if (board.createNewBrick()) {
                 viewGuiController.gameOver();
             }
@@ -53,38 +73,49 @@ public class GameController implements InputEventListener {
                 board.getScore().add(1);
             }
         }
-        // Updated to include ghost Y (via SimpleBoard's getViewData)
+
         return new DownData(clearRow, board.getViewData());
     }
 
     @Override
     public ViewData onLeftEvent(MoveEvent event) {
         board.moveBrickLeft();
-        return board.getViewData();  // Now includes ghost Y
+        return board.getViewData();
     }
 
     @Override
     public ViewData onRightEvent(MoveEvent event) {
         board.moveBrickRight();
-        return board.getViewData();  // Now includes ghost Y
+        return board.getViewData();
     }
 
     @Override
     public ViewData onRotateEvent(MoveEvent event) {
         board.rotateLeftBrick();
-        return board.getViewData();  // Now includes ghost Y
+        return board.getViewData();
     }
 
     @Override
     public void createNewGame() {
         board.newGame();
+        previousLevel = 1;  // NEW: Reset level tracking
+        viewGuiController.setGameSpeed(board.getLevel().getSpeedMs());  // NEW: Reset speed
         viewGuiController.refreshGameBackground(board.getBoardMatrix());
     }
 
+    @Override
     public DownData onHardDropEvent(MoveEvent event) {
         DownData data = board.hardDrop();
+
+        // NEW: Check for level-up after hard drop
+        int currentLevel = board.getLevel().getCurrentLevel();
+        if (currentLevel > previousLevel) {
+            previousLevel = currentLevel;
+            viewGuiController.setGameSpeed(board.getLevel().getSpeedMs());
+            viewGuiController.showLevelUpNotification(currentLevel);
+        }
+
         viewGuiController.refreshGameBackground(board.getBoardMatrix());
-        // Updated to include ghost Y for new brick
         return new DownData(data.getClearRow(), board.getViewData());
     }
 
@@ -94,7 +125,6 @@ public class GameController implements InputEventListener {
         if (success) {
             return board.getViewData();
         }
-        // If hold failed (already used), return current state
         return board.getViewData();
     }
 }
