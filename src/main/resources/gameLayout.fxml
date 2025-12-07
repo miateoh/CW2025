@@ -34,6 +34,13 @@
                style="-fx-text-fill: white; -fx-font-size: 16; -fx-font-weight: bold;" />
     </Pane>
 
+    <Label fx:id="timerLabel"
+           text="TIME: 60"
+           layoutX="15"
+           layoutY="15"
+           visible="false"
+           style="-fx-text-fill: white; -fx-font-size: 20px; -fx-font-weight: bold;" />
+
     <!-- INFO PANEL -->
     <Pane fx:id="infoPanel"
           layoutX="250" layoutY="60"

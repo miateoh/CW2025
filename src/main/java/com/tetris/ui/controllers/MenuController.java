@@ -17,32 +17,27 @@ public class MenuController {
     @FXML
     public void initialize() {
         startButton.setOnAction(e -> startGame());
-        quitButton.setOnAction(e -> System.exit(0));
-
         scoresButton.setOnAction(e -> openScores());
+        quitButton.setOnAction(e -> System.exit(0));
     }
 
+    /** LOAD MODE SELECT SCREEN */
     private void startGame() {
         try {
             FXMLLoader loader = new FXMLLoader(
-                    Main.class.getClassLoader().getResource("gameLayout.fxml")
+                    Main.class.getClassLoader().getResource("mode_select.fxml")
             );
-            Parent root = loader.load();
 
+            Parent root = loader.load();
             Stage stage = (Stage) startButton.getScene().getWindow();
             stage.setScene(new Scene(root, 500, 500));
-
-            // Create GameController AFTER switching scene
-            com.tetris.game.logic.GameController gc =
-                    new com.tetris.game.logic.GameController(
-                            loader.getController()
-                    );
 
         } catch (Exception ex) {
             ex.printStackTrace();
         }
     }
 
+    /** LOAD HIGH SCORES */
     private void openScores() {
         try {
             FXMLLoader loader = new FXMLLoader(
@@ -50,7 +45,6 @@ public class MenuController {
             );
 
             Parent root = loader.load();
-
             Stage stage = (Stage) startButton.getScene().getWindow();
             stage.setScene(new Scene(root, 700, 700));
 
@@ -58,5 +52,4 @@ public class MenuController {
             ex.printStackTrace();
         }
     }
-
 }

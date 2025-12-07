@@ -82,6 +82,7 @@ public class GuiController implements Initializable {
     @FXML private Label linesLabel;
     @FXML private Pane gameContainer;
     @FXML private StackPane rootPane;
+    @FXML private Label timerLabel;
 
     private Rectangle[][][] nextPieceRectangles;
     private Rectangle[][] displayMatrix;
@@ -96,6 +97,13 @@ public class GuiController implements Initializable {
     private HighScoreManager highScoreManager;
     private double baseWidth = 500;
     private double baseHeight = 500;
+
+    private boolean timeTrial = false;
+    private Timeline timeTrialTimer;
+    private int timeLeft = 60;
+    private boolean isTimeTrial = false;
+    private int remainingTime = 60;
+    private Timeline timeTrialTimeline;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -205,7 +213,13 @@ public class GuiController implements Initializable {
 
     private void pauseGame() {
         isPause.set(true);
-        timeLine.pause();
+
+        // Pause falling timeline
+        if (timeLine != null) timeLine.pause();
+
+        // Pause time-trial timer
+        if (isTimeTrial && timeTrialTimeline != null)
+            timeTrialTimeline.pause();
 
         pauseOverlay.setOpacity(0);
         pauseOverlay.setVisible(true);
@@ -219,13 +233,21 @@ public class GuiController implements Initializable {
 
     private void resumeGame() {
         isPause.set(false);
-        timeLine.play();
+
+        // Resume falling timeline
+        if (timeLine != null) timeLine.play();
+
+        // Resume time-trial timer
+        if (isTimeTrial && timeTrialTimeline != null)
+            timeTrialTimeline.play();
+
         pauseOverlay.setVisible(false);
         gamePanel.requestFocus();
     }
 
     private void restartGame() {
         if (timeLine != null) timeLine.stop();
+        if (timeTrialTimeline != null) timeTrialTimeline.stop();
 
         isPause.set(false);
         isGameOver.set(false);
@@ -238,6 +260,18 @@ public class GuiController implements Initializable {
 
         eventListener.createNewGame();
         refreshGameBackground(new int[0][0]);
+
+        if (isTimeTrial) {
+            remainingTime = 60;            // Reset countdown
+            timerLabel.setText("TIME: 60");
+            timerLabel.setVisible(true);
+
+            if (timeTrialTimeline != null) {
+                timeTrialTimeline.stop();
+            }
+
+            startTimeTrialTimer();         // Restart timer
+        }
 
         gamePanel.requestFocus();
         timeLine.play();
@@ -637,6 +671,8 @@ public class GuiController implements Initializable {
     public void gameOver() {
         timeLine.stop();
         isGameOver.set(true);
+        if (timeTrialTimer != null)
+            timeTrialTimer.stop();
 
         // Get current score from the score label
         String scoreText = scoreLabel.getText().replace("SCORE: ", "");
@@ -725,6 +761,73 @@ public class GuiController implements Initializable {
                 linesLabel.setText(String.valueOf(newVal))
         );
         linesLabel.setText(String.valueOf(linesProperty.get()));
+    }
+
+    public void enableTimeTrialMode(boolean enabled) {
+        this.isTimeTrial = enabled;
+
+        if (enabled) {
+            timerLabel.setVisible(true);
+            timerLabel.setText("TIME: 60");
+            remainingTime = 60;
+            startTimeTrialTimer();
+        } else {
+            timerLabel.setVisible(false);
+        }
+    }
+
+    public void initTimeTrial(boolean isEnabled) {
+        this.timeTrial = isEnabled;
+
+        if (!isEnabled) return;
+
+        timerLabel.setVisible(true);
+        timerLabel.setText("60");
+
+        timeTrialTimer = new Timeline(
+                new KeyFrame(Duration.seconds(1), e -> {
+                    timeLeft--;
+                    timerLabel.setText(String.valueOf(timeLeft));
+                    if (timeLeft <= 0) {
+                        gameOver(); // normal gameOver call — reuses scoreboard
+                    }
+                })
+        );
+
+        timeTrialTimer.setCycleCount(60);
+        timeTrialTimer.play();
+    }
+
+    private void startTimeTrialTimer() {
+        if (timeTrialTimeline != null) {
+            timeTrialTimeline.stop();
+        }
+
+        timeTrialTimeline = new Timeline(
+                new KeyFrame(Duration.seconds(1), e -> {
+                    remainingTime--;
+                    timerLabel.setText("TIME: " + remainingTime);
+
+                    if (remainingTime <= 0) {
+                        timeTrialTimeline.stop();
+                        endGameDueToTime();
+                    }
+                })
+        );
+
+        timeTrialTimeline.setCycleCount(Timeline.INDEFINITE);
+        timeTrialTimeline.play();
+    }
+
+    private void endGameDueToTime() {
+        isGameOver.set(true);
+
+        // Stop timelines safely
+        if (timeLine != null) timeLine.stop();
+        if (timeTrialTimeline != null) timeTrialTimeline.stop();
+
+        // Trigger actual game over logic
+        gameOver();
     }
 }
 

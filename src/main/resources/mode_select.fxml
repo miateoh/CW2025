@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import java.net.URL?>
+
+<StackPane xmlns:fx="http://javafx.com/fxml"
+           fx:controller="com.tetris.ui.controllers.ModeSelectController"
+           fx:id="modeRoot"
+           style="-fx-background-color: rgba(0,0,0,0.75);">
+
+    <stylesheets>
+        <URL value="@window_style.css"/>
+    </stylesheets>
+
+    <VBox alignment="CENTER" spacing="25">
+
+        <Label text="SELECT MODE"
+               style="-fx-text-fill: white; -fx-font-size: 42; -fx-font-weight: bold;"/>
+
+        <Button fx:id="marathonButton" text="MARATHON"
+                style="-fx-font-size: 22; -fx-text-fill: white; -fx-background-color: black;
+                       -fx-border-color: white; -fx-border-width: 2; -fx-padding: 10 40;"/>
+
+        <Button fx:id="timeTrialButton" text="TIME TRIAL (60s)"
+                style="-fx-font-size: 22; -fx-text-fill: white; -fx-background-color: black;
+                       -fx-border-color: white; -fx-border-width: 2; -fx-padding: 10 40;"/>
+
+        <Button fx:id="backButton" text="BACK"
+                style="-fx-font-size: 18; -fx-text-fill: white; -fx-background-color: black;
+                       -fx-border-color: white; -fx-border-width: 2; -fx-padding: 8 30;"/>
+    </VBox>
+
+</StackPane>
+

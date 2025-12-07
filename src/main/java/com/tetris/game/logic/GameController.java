@@ -24,22 +24,27 @@ public class GameController implements InputEventListener {
 
     private final GuiController viewGuiController;
     private int previousLevel = 1;
+    private final boolean isTimeTrial;
 
     public GameController(GuiController c) {
+        this(c, false);
+    }
+
+    public GameController(GuiController c, boolean isTimeTrial) {
+        this.isTimeTrial = isTimeTrial;
+
         viewGuiController = c;
         board.createNewBrick();
         viewGuiController.setEventListener(this);
+
+        // NEW — tell GUI what mode we're in
+        viewGuiController.initTimeTrial(isTimeTrial);
+
         viewGuiController.initGameView(board.getBoardMatrix(), board.getViewData());
         viewGuiController.bindScore(board.getScore().scoreProperty());
         viewGuiController.bindLevel(board.getLevel().levelProperty());
-
-
-        // NEW: Bind combo to UI
         viewGuiController.bindCombo(board.getScore().comboProperty());
-
         viewGuiController.setGameSpeed(board.getLevel().getSpeedMs());
-
-        //Bind lines cleared to UI
         viewGuiController.bindLines(board.getLevel().linesClearedProperty());
     }
 
