@@ -6,77 +6,271 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
+import javafx.scene.layout.HBox;
+import javafx.scene.text.Font;
+import javafx.scene.text.TextAlignment;
 
 public class GameOverPanel extends BorderPane {
 
     private Button restartButton;
+    private Button resetScoresButton; // NEW
+
+    // High score display components
+    private Label finalScoreLabel;
+    private VBox highScoreBox;
+    private Label highScoreTitle;
+    private VBox highScoreContainer;
 
     public GameOverPanel() {
         // Game Over Label
         final Label gameOverLabel = new Label("GAME OVER");
         gameOverLabel.getStyleClass().add("gameOverStyle");
+        gameOverLabel.setFont(new Font(36));
+        gameOverLabel.setTextAlignment(TextAlignment.CENTER);
+
+        // Final Score Display
+        finalScoreLabel = new Label("Final Score: 0");
+        finalScoreLabel.setStyle("-fx-text-fill: #FFD700; -fx-font-size: 24px; -fx-font-weight: bold;");
+        finalScoreLabel.setTextAlignment(TextAlignment.CENTER);
+
+        // High Scores Title
+        highScoreTitle = new Label("HIGH SCORES");
+        highScoreTitle.setStyle("-fx-text-fill: #4CAF50; -fx-font-size: 18px; -fx-font-weight: bold;");
+        highScoreTitle.setTextAlignment(TextAlignment.CENTER);
+
+        // High Scores Container
+        highScoreBox = new VBox(5);
+        highScoreBox.setAlignment(Pos.CENTER);
+        highScoreBox.setPrefWidth(150);
+
+        highScoreContainer = new VBox(10);
+        highScoreContainer.setAlignment(Pos.CENTER);
+        highScoreContainer.setPrefWidth(200);
+        highScoreContainer.getChildren().addAll(highScoreTitle, highScoreBox);
+        highScoreContainer.setVisible(false);
 
         // Restart Button
-        restartButton = new Button("RESTART");
-        restartButton.getStyleClass().add("restartButton");
-        restartButton.setStyle(
-                "-fx-font-size: 18px;" +
+        restartButton = createStyledButton("RESTART", "#4CAF50", "#45a049");
+
+        // NEW: Reset Scores Button (smaller, red accent)
+        resetScoresButton = createStyledButton("Reset Scores", "#666", "#ff6666");
+        resetScoresButton.setStyle(
+                "-fx-font-size: 12px;" +
                         "-fx-font-weight: bold;" +
-                        "-fx-padding: 10 30;" +
-                        "-fx-background-color: #4CAF50;" +
-                        "-fx-text-fill: white;" +
-                        "-fx-cursor: hand;" +
-                        "-fx-background-radius: 5;"
+                        "-fx-padding: 5 15;" +
+                        "-fx-background-color: transparent;" +
+                        "-fx-text-fill: #666;" +
+                        "-fx-border-color: #666;" +
+                        "-fx-border-width: 1;" +
+                        "-fx-border-radius: 3;" +
+                        "-fx-cursor: hand;"
         );
 
-        // Hover effect
-        restartButton.setOnMouseEntered(e ->
-                restartButton.setStyle(
-                        "-fx-font-size: 18px;" +
+        resetScoresButton.setOnMouseEntered(e ->
+                resetScoresButton.setStyle(
+                        "-fx-font-size: 12px;" +
                                 "-fx-font-weight: bold;" +
-                                "-fx-padding: 10 30;" +
-                                "-fx-background-color: #45a049;" +
-                                "-fx-text-fill: white;" +
-                                "-fx-cursor: hand;" +
-                                "-fx-background-radius: 5;"
+                                "-fx-padding: 5 15;" +
+                                "-fx-background-color: transparent;" +
+                                "-fx-text-fill: #ff6666;" +
+                                "-fx-border-color: #ff6666;" +
+                                "-fx-border-width: 1;" +
+                                "-fx-border-radius: 3;" +
+                                "-fx-cursor: hand;"
                 )
         );
-        restartButton.setOnMouseExited(e ->
-                restartButton.setStyle(
-                        "-fx-font-size: 18px;" +
+        resetScoresButton.setOnMouseExited(e ->
+                resetScoresButton.setStyle(
+                        "-fx-font-size: 12px;" +
                                 "-fx-font-weight: bold;" +
-                                "-fx-padding: 10 30;" +
-                                "-fx-background-color: #4CAF50;" +
-                                "-fx-text-fill: white;" +
-                                "-fx-cursor: hand;" +
-                                "-fx-background-radius: 5;"
+                                "-fx-padding: 5 15;" +
+                                "-fx-background-color: transparent;" +
+                                "-fx-text-fill: #666;" +
+                                "-fx-border-color: #666;" +
+                                "-fx-border-width: 1;" +
+                                "-fx-border-radius: 3;" +
+                                "-fx-cursor: hand;"
                 )
         );
 
         // Hint label
         Label hintLabel = new Label("(or press R)");
         hintLabel.setStyle("-fx-text-fill: #888; -fx-font-size: 12px;");
+        hintLabel.setTextAlignment(TextAlignment.CENTER);
+
+        // NEW: Button container for side-by-side layout
+        HBox buttonBox = new HBox(20);
+        buttonBox.setAlignment(Pos.CENTER);
+        buttonBox.getChildren().addAll(restartButton, resetScoresButton);
 
         // Layout
-        VBox contentBox = new VBox(20);
-        contentBox.setAlignment(Pos.CENTER);
-        contentBox.setPadding(new Insets(20));
-        contentBox.getChildren().addAll(gameOverLabel, restartButton, hintLabel);
+        VBox contentBox = new VBox(15);
+        contentBox.setAlignment(Pos.TOP_CENTER);
+        contentBox.setPadding(new Insets(40, 20, 20, 20));
+        contentBox.setPrefWidth(400);
+        contentBox.getChildren().addAll(
+                gameOverLabel,
+                finalScoreLabel,
+                highScoreContainer,
+                buttonBox, // Use buttonBox instead of just restartButton
+                hintLabel
+        );
 
-        setCenter(contentBox);
+        // Set at top of BorderPane
+        setTop(contentBox);
+        BorderPane.setAlignment(contentBox, Pos.TOP_CENTER);
+        setCenter(null);
+        setBottom(null);
+        BorderPane.setMargin(contentBox, new Insets(80, 0, 0, -30));
 
         // Semi-transparent background
-        setStyle("-fx-background-color: rgba(0, 0, 0, 0.8);");
+        setStyle("-fx-background-color: rgba(0, 0, 0, 0.85);");
+        setPrefSize(500, 500);
     }
 
-    //Sets the action for the restart button
+    private Button createStyledButton(String text, String color, String hoverColor) {
+        Button button = new Button(text);
+
+        if (text.equals("RESTART")) {
+            // Restart button style
+            String baseStyle = "-fx-font-size: 18px; -fx-font-weight: bold; -fx-padding: 10 30; " +
+                    "-fx-background-color: " + color + "; -fx-text-fill: white; " +
+                    "-fx-cursor: hand; -fx-background-radius: 5; -fx-alignment: center;";
+
+            button.setStyle(baseStyle);
+            button.setPrefWidth(150);
+
+            button.setOnMouseEntered(e ->
+                    button.setStyle(baseStyle.replace(color, hoverColor))
+            );
+            button.setOnMouseExited(e ->
+                    button.setStyle(baseStyle.replace(hoverColor, color))
+            );
+        } else {
+            // Reset button style
+            String baseStyle = "-fx-font-size: 12px; -fx-font-weight: bold; -fx-padding: 5 15; " +
+                    "-fx-background-color: transparent; -fx-text-fill: " + color + "; " +
+                    "-fx-cursor: hand; -fx-border-color: " + color + "; " +
+                    "-fx-border-width: 1; -fx-border-radius: 3; -fx-alignment: center;";
+
+            button.setStyle(baseStyle);
+            button.setPrefWidth(120);
+
+            button.setOnMouseEntered(e ->
+                    button.setStyle(baseStyle.replace(color, hoverColor)
+                            .replace("border-color: " + color, "border-color: " + hoverColor))
+            );
+            button.setOnMouseExited(e ->
+                    button.setStyle(baseStyle)
+            );
+        }
+
+        return button;
+    }
+
+    public void updateHighScores(java.util.List<Integer> highScores, int currentScore) {
+        // Update final score
+        finalScoreLabel.setText("Final Score: " + currentScore);
+
+        // Clear previous high scores
+        highScoreBox.getChildren().clear();
+
+        // Show the high score container
+        highScoreContainer.setVisible(true);
+        highScoreTitle.setVisible(true);
+
+        // Check if current score is a high score
+        boolean isNewHighScore = false;
+        if (!highScores.isEmpty()) {
+            isNewHighScore = currentScore > highScores.get(0);
+        }
+
+        if (isNewHighScore) {
+            finalScoreLabel.setStyle("-fx-text-fill: #FF4500; -fx-font-size: 26px; -fx-font-weight: bold; -fx-alignment: center;");
+        }
+
+        // Display high scores
+        for (int i = 0; i < Math.min(highScores.size(), 5); i++) {
+            int score = highScores.get(i);
+            Label scoreLabel = new Label((i + 1) + ". " + score);
+            scoreLabel.setPrefWidth(120);
+            scoreLabel.setTextAlignment(TextAlignment.CENTER);
+
+            // Style based on position
+            String style = "-fx-alignment: center; -fx-font-size: ";
+            if (i == 0) {
+                style += "16px; -fx-font-weight: bold; -fx-text-fill: #FFD700;";
+            } else if (i == 1) {
+                style += "15px; -fx-text-fill: #C0C0C0;";
+            } else if (i == 2) {
+                style += "15px; -fx-text-fill: #CD7F32;";
+            } else {
+                style += "14px; -fx-text-fill: white;";
+            }
+
+            // Highlight current score if it's in the list
+            if (score == currentScore) {
+                style += " -fx-underline: true; -fx-font-weight: bold;";
+            }
+
+            scoreLabel.setStyle(style);
+
+            // Center the label
+            HBox centeredRow = new HBox();
+            centeredRow.setAlignment(Pos.CENTER);
+            centeredRow.setPrefWidth(150);
+            centeredRow.getChildren().add(scoreLabel);
+
+            highScoreBox.getChildren().add(centeredRow);
+        }
+
+        // If no high scores yet, show a message
+        if (highScores.isEmpty()) {
+            Label noScoresLabel = new Label("No high scores yet!");
+            noScoresLabel.setStyle("-fx-text-fill: #888; -fx-font-size: 14px; -fx-alignment: center;");
+            noScoresLabel.setPrefWidth(150);
+            noScoresLabel.setTextAlignment(TextAlignment.CENTER);
+
+            HBox centeredMessage = new HBox();
+            centeredMessage.setAlignment(Pos.CENTER);
+            centeredMessage.setPrefWidth(150);
+            centeredMessage.getChildren().add(noScoresLabel);
+
+            highScoreBox.getChildren().add(centeredMessage);
+        }
+    }
+
+    public void clearHighScoresDisplay() {
+        highScoreBox.getChildren().clear();
+        highScoreContainer.setVisible(false);
+        finalScoreLabel.setText("Final Score: 0");
+        finalScoreLabel.setStyle("-fx-text-fill: #FFD700; -fx-font-size: 24px; -fx-font-weight: bold; -fx-alignment: center;");
+    }
+
+    // ORIGINAL: Sets the action for the restart button
     public void setOnRestart(Runnable action) {
         restartButton.setOnAction(e -> action.run());
     }
 
+    // NEW: Sets the action for the reset scores button
+    public void setOnResetScores(Runnable action) {
+        resetScoresButton.setOnAction(e -> {
+            // Optional: Add confirmation dialog here
+            action.run();
+        });
+    }
 
-    //Gets the restart button
+    // ORIGINAL: Gets the restart button
     public Button getRestartButton() {
         return restartButton;
+    }
+
+    // NEW: Gets the reset scores button
+    public Button getResetScoresButton() {
+        return resetScoresButton;
+    }
+
+    public Label getFinalScoreLabel() {
+        return finalScoreLabel;
     }
 }

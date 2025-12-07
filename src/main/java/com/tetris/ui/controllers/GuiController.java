@@ -15,6 +15,7 @@ import com.tetris.game.events.MoveEvent;
 import com.tetris.game.logic.InputEventListener;
 import com.tetris.ui.views.GameOverPanel;
 import com.tetris.ui.views.NotificationPanel;
+import com.tetris.game.data.HighScoreManager;
 
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
@@ -24,7 +25,6 @@ import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 
@@ -62,7 +62,7 @@ public class GuiController implements Initializable {
     @FXML private GridPane nextPiecePanel3;
 
     @FXML private Label scoreLabel;
-    @FXML private Label levelLabel;  // NEW: Level display
+    @FXML private Label levelLabel;
 
     @FXML private Pane pauseOverlay;
     @FXML private Button pauseButton;
@@ -74,8 +74,7 @@ public class GuiController implements Initializable {
     @FXML private GameOverPanel gameOverPanel;
 
     @FXML private Label comboLabel;
-    @FXML private Label linesLabel;  // NEW: Lines display
-
+    @FXML private Label linesLabel;
 
     private Rectangle[][][] nextPieceRectangles;
     private Rectangle[][] displayMatrix;
@@ -87,8 +86,13 @@ public class GuiController implements Initializable {
     private final BooleanProperty isPause = new SimpleBooleanProperty(false);
     private final BooleanProperty isGameOver = new SimpleBooleanProperty(false);
 
+    private HighScoreManager highScoreManager;
+
     @Override
     public void initialize(URL location, ResourceBundle resources) {
+        System.out.println("GUI Controller Initializing...");
+        System.out.println("groupNotification is null? " + (groupNotification == null));
+        System.out.println("gameOverPanel is null? " + (gameOverPanel == null));
 
         gamePanel.setFocusTraversable(true);
         gamePanel.setOnKeyPressed(this::handleKeyPress);
@@ -97,13 +101,17 @@ public class GuiController implements Initializable {
         gameOverPanel.setVisible(false);
         pauseOverlay.setVisible(false);
 
+        // Initialize high score manager
+        highScoreManager = new HighScoreManager();
+
         // Wire up buttons
         resumeButton.setOnAction(e -> resumeGame());
         restartButton.setOnAction(e -> restartGame());
         quitButton.setOnAction(e -> System.exit(0));
 
-        // Wire up game over panel restart button
+        // Wire up game over panel buttons
         gameOverPanel.setOnRestart(this::restartGame);
+        gameOverPanel.setOnResetScores(this::resetHighScores);
 
         initializeNextPiecePanels();
         initializeHoldPieceDisplay();
@@ -151,11 +159,8 @@ public class GuiController implements Initializable {
                         new MoveEvent(EventType.DOWN, EventSource.USER)
                 );
 
-                if (data.getClearRow() != null && data.getClearRow().getLinesRemoved() > 0) {
-                    NotificationPanel n = new NotificationPanel("+" + data.getClearRow().getScoreBonus());
-                    groupNotification.getChildren().add(n);
-                    n.showScore(groupNotification.getChildren());
-                }
+                // FIXED: Safe notification
+                showScoreNotification(data);
 
                 refreshBrick(data.getViewData());
             }
@@ -208,6 +213,9 @@ public class GuiController implements Initializable {
 
         pauseOverlay.setVisible(false);
         gameOverPanel.setVisible(false);
+
+        // Clear high scores display when restarting
+        gameOverPanel.clearHighScoresDisplay();
 
         eventListener.createNewGame();
         refreshGameBackground(new int[0][0]);
@@ -428,15 +436,19 @@ public class GuiController implements Initializable {
 
     private void moveDown(MoveEvent e) {
         DownData data = eventListener.onDownEvent(e);
+        showScoreNotification(data); // FIXED: Use safe method
+        refreshBrick(data.getViewData());
+        gamePanel.requestFocus();
+    }
 
-        if (data.getClearRow() != null && data.getClearRow().getLinesRemoved() > 0) {
+    // NEW: Safe method to show score notifications
+    private void showScoreNotification(DownData data) {
+        if (data.getClearRow() != null && data.getClearRow().getLinesRemoved() > 0
+                && groupNotification != null && groupNotification.getChildren() != null) {
             NotificationPanel n = new NotificationPanel("+" + data.getClearRow().getScoreBonus());
             groupNotification.getChildren().add(n);
             n.showScore(groupNotification.getChildren());
         }
-
-        refreshBrick(data.getViewData());
-        gamePanel.requestFocus();
     }
 
     public void setEventListener(InputEventListener listener) {
@@ -450,14 +462,13 @@ public class GuiController implements Initializable {
     }
 
     // ===========================
-    // NEW: LEVEL SYSTEM
+    // LEVEL SYSTEM
     // ===========================
 
     public void bindLevel(IntegerProperty levelProperty) {
         levelProperty.addListener((o, oldVal, newVal) ->
-                levelLabel.setText(String.valueOf(newVal))  // Just the number
+                levelLabel.setText(String.valueOf(newVal))
         );
-        // Set initial value
         levelLabel.setText(String.valueOf(levelProperty.get()));
     }
 
@@ -473,7 +484,6 @@ public class GuiController implements Initializable {
 
             timeLine.setCycleCount(Timeline.INDEFINITE);
 
-            // Resume if it was playing before
             if (wasPlaying && !isPause.get() && !isGameOver.get()) {
                 timeLine.play();
             }
@@ -481,10 +491,13 @@ public class GuiController implements Initializable {
     }
 
     public void showLevelUpNotification(int newLevel) {
-        NotificationPanel notification = new NotificationPanel("LEVEL " + newLevel + "!");
-        groupNotification.getChildren().add(notification);
-        notification.setLayoutY(100);
-        notification.showScore(groupNotification.getChildren());
+        // FIXED: Safe notification
+        if (groupNotification != null && groupNotification.getChildren() != null) {
+            NotificationPanel notification = new NotificationPanel("LEVEL " + newLevel + "!");
+            groupNotification.getChildren().add(notification);
+            notification.setLayoutY(100);
+            notification.showScore(groupNotification.getChildren());
+        }
     }
 
     // ===========================
@@ -494,9 +507,60 @@ public class GuiController implements Initializable {
     public void gameOver() {
         timeLine.stop();
         isGameOver.set(true);
+
+        // Get current score from the score label
+        String scoreText = scoreLabel.getText().replace("SCORE: ", "");
+        int finalScore;
+        try {
+            finalScore = Integer.parseInt(scoreText.trim());
+        } catch (NumberFormatException e) {
+            finalScore = 0;
+        }
+
+        // Save score and update display
+        highScoreManager.addScore(finalScore);
+        gameOverPanel.updateHighScores(highScoreManager.getHighScores(), finalScore);
+
         gameOverPanel.setVisible(true);
         gameOverPanel.toFront();
     }
+
+    // ===========================
+    // HIGH SCORE RESET
+    // ===========================
+
+    private void resetHighScores() {
+        // Show confirmation notification if available
+        if (groupNotification != null && groupNotification.getChildren() != null) {
+            NotificationPanel resetNotification = new NotificationPanel("High Scores Reset!");
+            resetNotification.setStyle("-fx-text-fill: #FF6666;");
+            groupNotification.getChildren().add(resetNotification);
+            resetNotification.showScore(groupNotification.getChildren());
+        } else {
+            System.out.println("Note: groupNotification is not available for showing reset notification");
+        }
+
+        // Reset the scores
+        highScoreManager.resetHighScores();
+
+        // Get current score from label
+        String scoreText = scoreLabel.getText().replace("SCORE: ", "");
+        int finalScore;
+        try {
+            finalScore = Integer.parseInt(scoreText.trim());
+        } catch (NumberFormatException e) {
+            finalScore = 0;
+        }
+
+        // Update display with empty scores
+        gameOverPanel.updateHighScores(highScoreManager.getHighScores(), finalScore);
+
+        System.out.println("High scores have been reset.");
+    }
+
+    // ===========================
+    // COMBO SYSTEM
+    // ===========================
 
     public void bindCombo(IntegerProperty comboProperty) {
         comboProperty.addListener((o, oldVal, newVal) -> {
@@ -507,28 +571,32 @@ public class GuiController implements Initializable {
                 comboLabel.setVisible(false);
             }
         });
-        // Set initial state
         comboLabel.setVisible(false);
     }
 
     public void showComboNotification(int comboCount, int bonusPoints) {
-        NotificationPanel notification = new NotificationPanel(
-                "COMBO x" + comboCount + "! (+" + bonusPoints + ")"
-        );
-        notification.setTranslateY(-150); // Position differently from score
-        groupNotification.getChildren().add(notification);
-        notification.showScore(groupNotification.getChildren());
+        // FIXED: Safe notification
+        if (groupNotification != null && groupNotification.getChildren() != null) {
+            NotificationPanel notification = new NotificationPanel(
+                    "COMBO x" + comboCount + "! (+" + bonusPoints + ")"
+            );
+            notification.setTranslateY(-150);
+            groupNotification.getChildren().add(notification);
+            notification.showScore(groupNotification.getChildren());
+        }
     }
+
+    // ===========================
+    // LINES DISPLAY
+    // ===========================
 
     public void bindLines(IntegerProperty linesProperty) {
         linesProperty.addListener((o, oldVal, newVal) ->
                 linesLabel.setText(String.valueOf(newVal))
         );
-        // Set initial value
         linesLabel.setText(String.valueOf(linesProperty.get()));
     }
 }
-
 
 
 
