@@ -5,8 +5,7 @@
 <?import java.net.URL?>
 
 <StackPane xmlns:fx="http://javafx.com/fxml"
-           fx:controller="com.tetris.ui.controllers.ModeSelectController"
-           fx:id="modeRoot"
+           fx:controller="com.tetris.ui.controllers.SprintSelectController"
            style="-fx-background-color: rgba(0,0,0,0.75);">
 
     <stylesheets>
@@ -15,27 +14,25 @@
 
     <VBox alignment="CENTER" spacing="25">
 
-        <Label text="SELECT MODE"
+        <Label text="SPRINT MODE"
                style="-fx-text-fill: white; -fx-font-size: 42; -fx-font-weight: bold;"/>
 
-        <Button fx:id="marathonButton" text="MARATHON"
+        <Button fx:id="sprint10" text="SPRINT (10 LINES)"
                 style="-fx-font-size: 22; -fx-text-fill: white; -fx-background-color: black;
                        -fx-border-color: white; -fx-border-width: 2; -fx-padding: 10 40;"/>
 
-        <Button fx:id="timeTrialButton" text="TIME TRIAL (60s)"
+        <Button fx:id="sprint20" text="SPRINT (20 LINES)"
                 style="-fx-font-size: 22; -fx-text-fill: white; -fx-background-color: black;
                        -fx-border-color: white; -fx-border-width: 2; -fx-padding: 10 40;"/>
 
-        <Button fx:id="sprintButton" text="SPRINT"
+        <Button fx:id="sprint40" text="SPRINT (40 LINES)"
                 style="-fx-font-size: 22; -fx-text-fill: white; -fx-background-color: black;
-               -fx-border-color: white; -fx-border-width: 2; -fx-padding: 10 40;"/>
+                       -fx-border-color: white; -fx-border-width: 2; -fx-padding: 10 40;"/>
 
         <Button fx:id="backButton" text="BACK"
                 style="-fx-font-size: 18; -fx-text-fill: white; -fx-background-color: black;
                        -fx-border-color: white; -fx-border-width: 2; -fx-padding: 8 30;"/>
 
-
     </VBox>
 
 </StackPane>
-

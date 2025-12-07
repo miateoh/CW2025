@@ -16,36 +16,34 @@ public class MenuController {
 
     @FXML
     public void initialize() {
-        startButton.setOnAction(e -> startGame());
+        startButton.setOnAction(e -> openModeSelect());
         scoresButton.setOnAction(e -> openScores());
         quitButton.setOnAction(e -> System.exit(0));
     }
 
-    /** LOAD MODE SELECT SCREEN */
-    private void startGame() {
+    private void openModeSelect() {
         try {
             FXMLLoader loader = new FXMLLoader(
                     Main.class.getClassLoader().getResource("mode_select.fxml")
             );
-
             Parent root = loader.load();
+
             Stage stage = (Stage) startButton.getScene().getWindow();
-            stage.setScene(new Scene(root, 500, 500));
+            stage.setScene(new Scene(root, 700, 700));
 
         } catch (Exception ex) {
             ex.printStackTrace();
         }
     }
 
-    /** LOAD HIGH SCORES */
     private void openScores() {
         try {
             FXMLLoader loader = new FXMLLoader(
                     Main.class.getClassLoader().getResource("high_scores.fxml")
             );
-
             Parent root = loader.load();
-            Stage stage = (Stage) startButton.getScene().getWindow();
+
+            Stage stage = (Stage) scoresButton.getScene().getWindow();
             stage.setScene(new Scene(root, 700, 700));
 
         } catch (Exception ex) {

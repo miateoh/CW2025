@@ -51,6 +51,8 @@ import javafx.scene.transform.Scale;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 import javafx.application.Platform;
+import javafx.animation.PauseTransition;
+import javafx.util.Duration;
 
 public class GuiController implements Initializable {
 
@@ -104,6 +106,17 @@ public class GuiController implements Initializable {
     private boolean isTimeTrial = false;
     private int remainingTime = 60;
     private Timeline timeTrialTimeline;
+
+    private double sprintTime = 0.0;
+    private Timeline sprintTimeline;
+
+    private boolean isTimeTrialMode = false;
+    private boolean isSprintMode = false;
+    private int sprintTarget = 40; // default
+    private int sprintLinesCleared = 0;
+
+    private Timeline sprintTimer;
+    private long sprintStartTime;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -214,12 +227,12 @@ public class GuiController implements Initializable {
     private void pauseGame() {
         isPause.set(true);
 
-        // Pause falling timeline
         if (timeLine != null) timeLine.pause();
-
-        // Pause time-trial timer
-        if (isTimeTrial && timeTrialTimeline != null)
+        if (isTimeTrialMode && timeTrialTimeline != null)
             timeTrialTimeline.pause();
+
+        if (isSprintMode && sprintTimer != null)
+            sprintTimer.pause();
 
         pauseOverlay.setOpacity(0);
         pauseOverlay.setVisible(true);
@@ -234,20 +247,26 @@ public class GuiController implements Initializable {
     private void resumeGame() {
         isPause.set(false);
 
-        // Resume falling timeline
         if (timeLine != null) timeLine.play();
-
-        // Resume time-trial timer
-        if (isTimeTrial && timeTrialTimeline != null)
+        if (isTimeTrialMode && timeTrialTimeline != null)
             timeTrialTimeline.play();
+
+        if (isSprintMode && sprintTimer != null)
+            sprintTimer.play();
 
         pauseOverlay.setVisible(false);
         gamePanel.requestFocus();
     }
 
     private void restartGame() {
+        // Stop fall timeline
         if (timeLine != null) timeLine.stop();
+
+        // Stop time trial
         if (timeTrialTimeline != null) timeTrialTimeline.stop();
+
+        // Stop sprint
+        if (sprintTimer != null) sprintTimer.stop();
 
         isPause.set(false);
         isGameOver.set(false);
@@ -258,23 +277,51 @@ public class GuiController implements Initializable {
         // Clear high scores display when restarting
         gameOverPanel.clearHighScoresDisplay();
 
+        // RESET THE GAME BOARD
         eventListener.createNewGame();
         refreshGameBackground(new int[0][0]);
 
-        if (isTimeTrial) {
-            remainingTime = 60;            // Reset countdown
-            timerLabel.setText("TIME: 60");
+        // ===== TIME TRIAL MODE RESET =====
+        if (isTimeTrialMode) {
+            remainingTime = 60;
             timerLabel.setVisible(true);
-
-            if (timeTrialTimeline != null) {
-                timeTrialTimeline.stop();
-            }
-
-            startTimeTrialTimer();         // Restart timer
+            timerLabel.setText("TIME: 60");
+            startTimeTrialTimer();
         }
 
-        gamePanel.requestFocus();
+        // ===== SPRINT MODE RESET (THE FIX) =====
+        if (isSprintMode) {
+
+            sprintLinesCleared = 0;
+            timerLabel.setVisible(true);
+            timerLabel.setText("0.00");
+
+            // reset time counters
+            sprintTime = 0.0;
+
+            // Stop old sprint timer if still running
+            if (sprintTimer != null)
+                sprintTimer.stop();
+
+            // Delay start by 0.88 seconds
+            PauseTransition delay = new PauseTransition(Duration.seconds(0.88));
+            delay.setOnFinished(ev -> {
+                sprintStartTime = System.currentTimeMillis();
+
+                sprintTimer = new Timeline(new KeyFrame(
+                        Duration.millis(10),
+                        e -> updateSprintTimer()
+                ));
+                sprintTimer.setCycleCount(Timeline.INDEFINITE);
+                sprintTimer.play();
+            });
+
+            delay.play();
+        }
+
+        // Restart fall speed
         timeLine.play();
+        gamePanel.requestFocus();
     }
 
     // ===========================
@@ -669,12 +716,31 @@ public class GuiController implements Initializable {
     // ===========================
 
     public void gameOver() {
-        timeLine.stop();
-        isGameOver.set(true);
-        if (timeTrialTimer != null)
-            timeTrialTimer.stop();
 
-        // Get current score from the score label
+        // Stop timers
+        if (timeLine != null) timeLine.stop();
+        if (timeTrialTimeline != null) timeTrialTimeline.stop();
+        if (sprintTimeline != null) sprintTimeline.stop();
+
+        isGameOver.set(true);
+
+        // ---------- SPRINT MODE CUSTOM END SCREEN ----------
+        // -------- SPRINT MODE END --------
+        if (isSprintMode) {
+
+            if (sprintTimer != null) sprintTimer.stop();
+
+            double finalTime = sprintTime;   // Now contains the correct measured time
+
+            gameOverPanel.hideGameOverTitle();
+            int finalScore = Integer.parseInt(scoreLabel.getText().replace("SCORE: ", "").trim());
+            gameOverPanel.showSprintResult(sprintTime, sprintTarget, finalScore);
+
+            gameOverPanel.setVisible(true);
+            gameOverPanel.toFront();
+            return;
+        }
+        // ---------- NORMAL GAME OVER (Marathon + Time Trial) ----------
         String scoreText = scoreLabel.getText().replace("SCORE: ", "");
         int finalScore;
         try {
@@ -683,7 +749,6 @@ public class GuiController implements Initializable {
             finalScore = 0;
         }
 
-        // Save score and update display
         highScoreManager.addScore(finalScore);
         gameOverPanel.updateHighScores(highScoreManager.getHighScores(), finalScore);
 
@@ -757,10 +822,42 @@ public class GuiController implements Initializable {
     // ===========================
 
     public void bindLines(IntegerProperty linesProperty) {
-        linesProperty.addListener((o, oldVal, newVal) ->
-                linesLabel.setText(String.valueOf(newVal))
-        );
+        linesProperty.addListener((o, oldVal, newVal) -> {
+            linesLabel.setText(String.valueOf(newVal));
+
+            if (isSprintMode && newVal.intValue() >= sprintTarget) {
+                sprintCompleted();
+            }
+        });
+
         linesLabel.setText(String.valueOf(linesProperty.get()));
+    }
+
+    private void sprintCompleted() {
+
+        if (sprintTimeline != null) sprintTimeline.stop();
+        isGameOver.set(true);
+
+        // WAIT 1 FRAME so score label updates from the final line clear
+        Platform.runLater(() -> {
+
+            // Now the score label contains the correct updated score
+            gameOver();
+        });
+    }
+
+    private void finishSprintMode() {
+        isGameOver.set(true);
+
+        if (timeLine != null) timeLine.stop();
+        if (sprintTimer != null) sprintTimer.stop();
+
+        long elapsed = System.currentTimeMillis() - sprintStartTime;
+        double seconds = elapsed / 1000.0;
+
+        timerLabel.setText(String.format("%.2f", seconds));
+
+        gameOver();
     }
 
     public void enableTimeTrialMode(boolean enabled) {
@@ -774,6 +871,48 @@ public class GuiController implements Initializable {
         } else {
             timerLabel.setVisible(false);
         }
+    }
+
+    public void setGameMode(boolean timeTrial, boolean sprint, int sprintTarget) {
+        this.isTimeTrialMode = timeTrial;
+        this.isSprintMode = sprint;
+        this.sprintTarget = sprintTarget;
+
+        if (isTimeTrialMode) {
+            remainingTime = 60;
+            timerLabel.setVisible(true);
+            timerLabel.setText("TIME: 60");
+            startTimeTrialTimer();
+        }
+
+        if (isSprintMode) {
+            enableSprintMode(sprintTarget);
+        }
+    }
+
+    public void enableSprintMode(int targetLines) {
+        this.isSprintMode = true;
+        this.sprintTarget = targetLines;
+        this.sprintLinesCleared = 0;
+
+        // Start timer
+        sprintStartTime = System.currentTimeMillis();
+
+        sprintTimer = new Timeline(
+                new KeyFrame(Duration.millis(100), e -> updateSprintTimer())
+        );
+        sprintTimer.setCycleCount(Timeline.INDEFINITE);
+        sprintTimer.play();
+
+        timerLabel.setVisible(true);
+        timerLabel.setText("0.00");
+    }
+
+    private void updateSprintTimer() {
+        long elapsed = System.currentTimeMillis() - sprintStartTime;
+        sprintTime = elapsed / 1000.0;       // <— Now sprintTime will store real time
+
+        timerLabel.setText(String.format("%.2f", sprintTime));
     }
 
     public void initTimeTrial(boolean isEnabled) {
@@ -828,6 +967,22 @@ public class GuiController implements Initializable {
 
         // Trigger actual game over logic
         gameOver();
+    }
+
+    private void startSprintTimer() {
+        if (sprintTimeline != null)
+            sprintTimeline.stop();
+
+        sprintTimeline = new Timeline(new KeyFrame(
+                Duration.millis(10),   // update every 0.01 sec (10 ms)
+                e -> {
+                    sprintTime += 0.01;
+                    timerLabel.setText(String.format("TIME: %.2f", sprintTime));
+                }
+        ));
+
+        sprintTimeline.setCycleCount(Timeline.INDEFINITE);
+        sprintTimeline.play();
     }
 }
 

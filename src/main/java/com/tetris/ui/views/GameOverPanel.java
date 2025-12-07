@@ -21,6 +21,10 @@ public class GameOverPanel extends BorderPane {
     private Label highScoreTitle;
     private VBox highScoreContainer;
 
+    private Label sprintTitleLabel;
+    private Label sprintInfoLabel;
+    private VBox contentBox;
+
     public GameOverPanel() {
         // Game Over Label
         final Label gameOverLabel = new Label("GAME OVER");
@@ -48,6 +52,16 @@ public class GameOverPanel extends BorderPane {
         highScoreContainer.setPrefWidth(200);
         highScoreContainer.getChildren().addAll(highScoreTitle, highScoreBox);
         highScoreContainer.setVisible(false);
+
+        sprintTitleLabel = new Label("SPRINT COMPLETE!");
+        sprintTitleLabel.setStyle("-fx-text-fill: #00eaff; -fx-font-size: 34px; -fx-font-weight: bold;");
+        sprintTitleLabel.setTextAlignment(TextAlignment.CENTER);
+        sprintTitleLabel.setVisible(false);
+
+        sprintInfoLabel = new Label("");
+        sprintInfoLabel.setStyle("-fx-text-fill: white; -fx-font-size: 20px;");
+        sprintInfoLabel.setTextAlignment(TextAlignment.CENTER);
+        sprintInfoLabel.setVisible(false);
 
         // Restart Button
         restartButton = createStyledButton("RESTART", "#4CAF50", "#45a049");
@@ -104,24 +118,26 @@ public class GameOverPanel extends BorderPane {
         buttonBox.getChildren().addAll(restartButton, resetScoresButton);
 
         // Layout
-        VBox contentBox = new VBox(15);
+        contentBox = new VBox(15);
         contentBox.setAlignment(Pos.TOP_CENTER);
         contentBox.setPadding(new Insets(40, 20, 20, 20));
-        contentBox.setPrefWidth(400);
+        contentBox.setPrefWidth(Double.MAX_VALUE);
         contentBox.getChildren().addAll(
                 gameOverLabel,
+                sprintTitleLabel,
                 finalScoreLabel,
+                sprintInfoLabel,
                 highScoreContainer,
-                buttonBox, // Use buttonBox instead of just restartButton
+                buttonBox,
                 hintLabel
         );
 
         // Set at top of BorderPane
         setTop(contentBox);
-        BorderPane.setAlignment(contentBox, Pos.TOP_CENTER);
+        BorderPane.setAlignment(contentBox, Pos.CENTER);
         setCenter(null);
         setBottom(null);
-        BorderPane.setMargin(contentBox, new Insets(80, 0, 0, -30));
+        BorderPane.setMargin(contentBox, new Insets(60, 0, 0, 0));
 
         // Semi-transparent background
         setStyle("-fx-background-color: rgba(0, 0, 0, 0.85);");
@@ -138,7 +154,7 @@ public class GameOverPanel extends BorderPane {
                     "-fx-cursor: hand; -fx-background-radius: 5; -fx-alignment: center;";
 
             button.setStyle(baseStyle);
-            button.setPrefWidth(150);
+            button.setPrefWidth(220);
 
             button.setOnMouseEntered(e ->
                     button.setStyle(baseStyle.replace(color, hoverColor))
@@ -273,4 +289,44 @@ public class GameOverPanel extends BorderPane {
     public Label getFinalScoreLabel() {
         return finalScoreLabel;
     }
+
+    public void hideGameOverTitle() {
+        // The first child in contentBox is the GAME OVER label
+        ((Label)((VBox)getTop()).getChildren().get(0)).setVisible(false);
+    }
+
+    public void showSprintResult(double timeSeconds, int targetLines, int finalScore) {
+
+        // Hide normal game over UI
+        finalScoreLabel.setVisible(false);
+        highScoreContainer.setVisible(false);
+        resetScoresButton.setVisible(false);
+
+        // Show sprint-specific UI
+        sprintTitleLabel.setVisible(true);
+        sprintInfoLabel.setVisible(true);
+
+        sprintTitleLabel.setText("SPRINT COMPLETE!");
+
+        sprintInfoLabel.setText(
+                "Cleared " + targetLines + " lines\n" +
+                        "Score: " + finalScore + "\n" +
+                        "Time: " + String.format("%.2f seconds", timeSeconds)
+        );
+
+        // Center the PLAY AGAIN button
+        restartButton.setText("PLAY AGAIN");
+        restartButton.setPrefWidth(200);                 // ★ Center nicely
+        BorderPane.setAlignment(restartButton, Pos.CENTER);
+
+        // Make sure sprint info is centered too
+        BorderPane.setAlignment(sprintTitleLabel, Pos.CENTER);
+        BorderPane.setAlignment(sprintInfoLabel, Pos.CENTER);
+    }
+
+    public void centerContent() {
+        this.setTop(null);      // remove top placement
+        this.setCenter(contentBox);  // center entire panel
+    }
+
 }

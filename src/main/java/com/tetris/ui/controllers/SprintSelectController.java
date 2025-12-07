@@ -9,45 +9,31 @@ import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.stage.Stage;
 
-public class ModeSelectController {
+public class SprintSelectController {
 
-    @FXML private Button marathonButton;
-    @FXML private Button timeTrialButton;
-    @FXML private Button sprintButton;
+    @FXML private Button sprint10;
+    @FXML private Button sprint20;
+    @FXML private Button sprint40;
     @FXML private Button backButton;
-    @FXML private javafx.scene.layout.StackPane modeRoot;
 
     @FXML
     public void initialize() {
+        sprint10.setOnAction(e -> loadGame(10));
+        sprint20.setOnAction(e -> loadGame(20));
+        sprint40.setOnAction(e -> loadGame(40));
 
-        marathonButton.setOnAction(e -> loadGame(false, false, 0));  // normal mode
-        timeTrialButton.setOnAction(e -> loadGame(true, false, 0));  // time trial
-        sprintButton.setOnAction(e -> openSprintMenu());
         backButton.setOnAction(e -> goBack());
     }
 
-    private void openSprintMenu() {
-        try {
-            FXMLLoader loader = new FXMLLoader(Main.class.getClassLoader().getResource("sprint_select.fxml"));
-            Parent root = loader.load();
-
-            Stage stage = (Stage) sprintButton.getScene().getWindow();
-            stage.setScene(new Scene(root, 500, 500));
-
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
-    }
-
-    private void loadGame(boolean timeTrial, boolean sprintMode, int sprintTarget) {
+    private void loadGame(int targetLines) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getClassLoader().getResource("gameLayout.fxml"));
             Parent root = loader.load();
 
             GuiController gui = loader.getController();
-            gui.setGameMode(timeTrial, sprintMode, sprintTarget);
+            gui.enableSprintMode(targetLines);
 
-            Stage stage = (Stage) modeRoot.getScene().getWindow();
+            Stage stage = (Stage) sprint10.getScene().getWindow();
             stage.setScene(new Scene(root, stage.getWidth(), stage.getHeight()));
             stage.setFullScreenExitHint("");
             stage.setFullScreen(stage.isFullScreen());
@@ -61,9 +47,9 @@ public class ModeSelectController {
 
     private void goBack() {
         try {
-            FXMLLoader loader = new FXMLLoader(Main.class.getClassLoader().getResource("main_menu.fxml"));
-
+            FXMLLoader loader = new FXMLLoader(Main.class.getClassLoader().getResource("mode_select.fxml"));
             Parent root = loader.load();
+
             Stage stage = (Stage) backButton.getScene().getWindow();
             stage.setScene(new Scene(root, 500, 500));
 
