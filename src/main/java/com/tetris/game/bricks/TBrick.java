@@ -1,3 +1,6 @@
+/**
+ * Represents the T-shaped Tetromino, including all rotation states.
+ */
 package com.tetris.game.bricks;
 
 import com.tetris.game.board.MatrixOperations;

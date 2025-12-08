@@ -1,3 +1,7 @@
+/**
+ * Processes user input events and converts them into movement or rotation
+ * requests for the GameController and movement systems.
+ */
 package com.tetris.game.logic;
 
 import com.tetris.game.events.MoveEvent;

@@ -1,3 +1,6 @@
+/**
+ * Represents the O-shaped Tetromino, the only non-rotating Tetromino type.
+ */
 package com.tetris.game.bricks;
 
 import com.tetris.game.board.MatrixOperations;

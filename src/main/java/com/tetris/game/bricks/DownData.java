@@ -1,3 +1,7 @@
+/**
+ * Bundles the results of vertical movement operations, including updated
+ * ViewData and scoring information from soft or hard drops.
+ */
 package com.tetris.game.bricks;
 
 import com.tetris.ui.views.ViewData;

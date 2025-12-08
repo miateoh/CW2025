@@ -4,7 +4,6 @@
  *
  * Delegates all game logic to GameController and acts purely as the view layer.
  */
-
 package com.tetris.ui.controllers;
 
 import com.tetris.Main;

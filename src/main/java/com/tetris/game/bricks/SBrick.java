@@ -1,3 +1,6 @@
+/**
+ * Represents the S-shaped Tetromino and its rotation configurations.
+ */
 package com.tetris.game.bricks;
 
 import com.tetris.game.board.MatrixOperations;

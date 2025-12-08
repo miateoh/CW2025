@@ -1,3 +1,7 @@
+/**
+ * Represents a movement or rotation request triggered by the user
+ * or by internal game automation.
+ */
 package com.tetris.game.events;
 
 public final class MoveEvent {

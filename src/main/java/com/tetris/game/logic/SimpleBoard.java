@@ -1,3 +1,7 @@
+/**
+ * Legacy representation of the board retained for compatibility. Most
+ * responsibilities are now handled by BoardState and MatrixOperations.
+ */
 package com.tetris.game.logic;
 
 import com.tetris.ui.views.ViewData;

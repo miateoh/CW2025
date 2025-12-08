@@ -1,3 +1,6 @@
+/**
+ * Represents the Z-shaped Tetromino with its mirrored rotation pattern.
+ */
 package com.tetris.game.bricks;
 
 import com.tetris.game.board.MatrixOperations;

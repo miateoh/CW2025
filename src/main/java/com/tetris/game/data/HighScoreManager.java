@@ -1,3 +1,7 @@
+/**
+ * Handles persistent storage and retrieval of high scores for all
+ * game modes, ensuring sorted and validated score data.
+ */
 package com.tetris.game.data;
 
 import java.io.*;

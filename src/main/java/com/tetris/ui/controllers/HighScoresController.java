@@ -1,3 +1,8 @@
+/**
+ * Displays and manages the high score screen, loading persistent results
+ * across all game modes from the HighScoreManager.
+ */
+
 package com.tetris.ui.controllers;
 
 import com.tetris.Main;

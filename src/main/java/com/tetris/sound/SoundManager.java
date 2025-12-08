@@ -1,3 +1,7 @@
+/**
+ * Central audio manager controlling background music, sound effects,
+ * and volume settings for the entire game.
+ */
 package com.tetris.sound;
 
 import javafx.scene.media.AudioClip;

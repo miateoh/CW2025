@@ -1,3 +1,7 @@
+/**
+ * Displays the game over summary panel, including score,
+ * lines cleared, and options to retry or return to the menu.
+ */
 package com.tetris.ui.views;
 
 import com.tetris.sound.SoundManager;

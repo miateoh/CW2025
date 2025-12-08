@@ -1,3 +1,6 @@
+/**
+ * Represents the J-shaped Tetromino with its predefined block layout.
+ */
 package com.tetris.game.bricks;
 
 import com.tetris.game.board.MatrixOperations;

@@ -1,3 +1,7 @@
+/**
+ * Controls the mode selection screen, allowing the player to choose
+ * between Marathon, Sprint, and Time Trial modes.
+ */
 package com.tetris.ui.controllers;
 
 import com.tetris.Main;

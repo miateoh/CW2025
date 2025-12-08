@@ -1,3 +1,7 @@
+/**
+ * Controls the settings screen, allowing the player to adjust audio options
+ * such as music and sound effect volume.
+ */
 package com.tetris.ui.controllers;
 
 import com.tetris.Main;

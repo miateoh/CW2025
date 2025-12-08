@@ -1,3 +1,7 @@
+/**
+ * Handles the detection and removal of completed rows, returning updated
+ * board matrices and line clear counts.
+ */
 package com.tetris.game.board;
 
 public class ClearRow {

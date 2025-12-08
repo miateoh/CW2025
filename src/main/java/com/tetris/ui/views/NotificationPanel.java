@@ -1,3 +1,7 @@
+/**
+ * UI component for displaying temporary onscreen notifications such as
+ * combo messages, level-ups, or hold swaps.
+ */
 package com.tetris.ui.views;
 
 import javafx.animation.FadeTransition;

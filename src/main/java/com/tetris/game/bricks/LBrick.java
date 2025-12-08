@@ -1,3 +1,6 @@
+/**
+ * Represents the L-shaped Tetromino with its standard orientations.
+ */
 package com.tetris.game.bricks;
 
 import com.tetris.game.board.MatrixOperations;

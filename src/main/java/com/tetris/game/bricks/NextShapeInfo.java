@@ -1,3 +1,7 @@
+/**
+ * Stores information about upcoming Tetromino shapes used in the
+ * next-piece preview panel.
+ */
 package com.tetris.game.bricks;
 
 import com.tetris.game.board.MatrixOperations;

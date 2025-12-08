@@ -1,3 +1,7 @@
+/**
+ * Implements the Factory Pattern for creating Tetromino objects,
+ * providing both specific and random brick creation.
+ */
 package com.tetris.game.bricks;
 
 import java.util.concurrent.ThreadLocalRandom;

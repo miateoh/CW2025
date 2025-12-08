@@ -1,3 +1,7 @@
+/**
+ * Entry point of the application responsible for launching the JavaFX
+ * environment and loading initial UI screens.
+ */
 package com.tetris;
 
 import com.tetris.game.logic.GameController;

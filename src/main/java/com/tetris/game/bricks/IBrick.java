@@ -1,3 +1,6 @@
+/**
+ * Represents the I-shaped Tetromino with its specific rotation pattern.
+ */
 package com.tetris.game.bricks;
 
 import com.tetris.game.board.MatrixOperations;

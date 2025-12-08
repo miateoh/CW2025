@@ -1,3 +1,7 @@
+/**
+ * High-level wrapper for board-related helpers, supporting interactions
+ * between board logic and other components like BoardState.
+ */
 package com.tetris.game.board;
 
 import com.tetris.game.data.Score;

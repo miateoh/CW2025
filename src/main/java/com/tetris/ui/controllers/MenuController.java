@@ -1,3 +1,7 @@
+/**
+ * Handles main menu navigation, including transitions to play modes,
+ * settings, and high score screens.
+ */
 package com.tetris.ui.controllers;
 
 import com.tetris.Main;
