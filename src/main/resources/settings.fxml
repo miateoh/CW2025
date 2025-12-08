@@ -3,34 +3,43 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.geometry.*?>
+<?import java.net.URL?>
 
 <StackPane xmlns:fx="http://javafx.com/fxml"
            fx:controller="com.tetris.ui.controllers.SettingsController"
-           style="-fx-background-color: rgba(0,0,0,0.75);">
+           styleClass="settings-root">
 
-    <VBox alignment="CENTER" spacing="25">
+    <stylesheets>
+        <URL value="@window_style.css"/>
+    </stylesheets>
 
-        <Label text="Settings"
-               style="-fx-text-fill: white; -fx-font-size: 32; -fx-font-weight: bold;"/>
+    <VBox alignment="CENTER" spacing="35">
 
-        <!-- BGM Volume -->
-        <VBox alignment="CENTER">
-            <Label text="Music Volume" style="-fx-text-fill: white; -fx-font-size: 16;"/>
-            <Slider fx:id="bgmSlider" min="0" max="1" value="0.35" prefWidth="250"/>
-            <CheckBox fx:id="bgmMute" text="Mute Music" style="-fx-text-fill: white;"/>
+        <!-- TITLE -->
+        <Label text="SETTINGS" styleClass="settings-title"/>
+
+        <!-- MUSIC SECTION -->
+        <VBox alignment="CENTER" spacing="12">
+            <Label text="Music Volume" styleClass="settings-label"/>
+            <Slider fx:id="bgmSlider"
+                    min="0" max="1" value="0.35"
+                    prefWidth="300"
+                    styleClass="settings-slider"/>
+            <CheckBox fx:id="bgmMute" text="Mute Music" styleClass="settings-checkbox"/>
         </VBox>
 
-        <!-- SFX Volume -->
-        <VBox alignment="CENTER">
-            <Label text="Sound Effects Volume" style="-fx-text-fill: white; -fx-font-size: 16;"/>
-            <Slider fx:id="sfxSlider" min="0" max="1" value="1" prefWidth="250"/>
-            <CheckBox fx:id="sfxMute" text="Mute SFX" style="-fx-text-fill: white;"/>
+        <!-- SFX SECTION -->
+        <VBox alignment="CENTER" spacing="12">
+            <Label text="Sound Effects Volume" styleClass="settings-label"/>
+            <Slider fx:id="sfxSlider"
+                    min="0" max="1" value="1"
+                    prefWidth="300"
+                    styleClass="settings-slider"/>
+            <CheckBox fx:id="sfxMute" text="Mute SFX" styleClass="settings-checkbox"/>
         </VBox>
 
-        <!-- Back Button -->
-        <Button fx:id="backButton" text="BACK"
-                style="-fx-font-size: 20; -fx-text-fill: white; -fx-background-color: black;
-                       -fx-border-color: white; -fx-border-width: 2; -fx-padding: 10 40;"/>
+        <!-- BACK BUTTON -->
+        <Button fx:id="backButton" text="BACK" styleClass="settings-button"/>
 
     </VBox>
 

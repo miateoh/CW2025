@@ -58,13 +58,13 @@ import javafx.stage.Stage;
 import javafx.application.Platform;
 import javafx.animation.PauseTransition;
 import javafx.util.Duration;
+import javafx.scene.layout.HBox;
 
 public class GuiController implements Initializable {
 
     private static final int BRICK_SIZE = 20;
 
     @FXML private GridPane gamePanel;
-    @FXML private GridPane brickPanel;
 
     @FXML private Pane holdPiecePane;
     @FXML private GridPane holdPieceGrid;
@@ -92,6 +92,7 @@ public class GuiController implements Initializable {
     @FXML private Label timerLabel;
     @FXML private Button mainMenuButton;
     @FXML private Button settingsButton;
+    @FXML private Pane timerPanel;
 
     private Rectangle[][][] nextPieceRectangles;
     private Rectangle[][] displayMatrix;
@@ -161,6 +162,8 @@ public class GuiController implements Initializable {
 
         initializeNextPiecePanels();
         initializeHoldPieceDisplay();
+
+        timerPanel.setVisible(false); // default for Marathon
 
         Platform.runLater(() -> {
             StackPane.setAlignment(gameContainer, null);
@@ -335,8 +338,13 @@ public class GuiController implements Initializable {
         isPause.set(false);
         isGameOver.set(false);
 
+        updateTimerPanelVisibility();
+
         pauseOverlay.setVisible(false);
         gameOverPanel.setVisible(false);
+
+        timerPanel.setVisible(isTimeTrialMode || isSprintMode);
+        timerLabel.setVisible(isTimeTrialMode || isSprintMode);
 
         // Clear high scores display when restarting
         gameOverPanel.clearHighScoresDisplay();
@@ -349,7 +357,7 @@ public class GuiController implements Initializable {
         if (isTimeTrialMode) {
             remainingTime = 60;
             timerLabel.setVisible(true);
-            timerLabel.setText("TIME: 60");
+            timerLabel.setText("60");
             startTimeTrialTimer();
         }
 
@@ -407,6 +415,7 @@ public class GuiController implements Initializable {
                 gamePanel.add(r, j, i - 2);
             }
 
+        // Create the active falling brick rectangles
         int[][] data = brick.getBrickData();
         rectangles = new Rectangle[data.length][data[0].length];
 
@@ -415,10 +424,9 @@ public class GuiController implements Initializable {
                 Rectangle r = new Rectangle(BRICK_SIZE, BRICK_SIZE);
                 r.setFill(getFillColor(data[y][x]));
                 rectangles[y][x] = r;
-                brickPanel.add(r, x, y);
             }
 
-        updateBrickPanelPosition(brick);
+        updateFallingBrickPosition(brick);
         updateNextPiecesDisplay(brick);
         updateHoldPieceDisplay(brick);
 
@@ -631,7 +639,7 @@ public class GuiController implements Initializable {
     private void refreshBrick(ViewData brick) {
         if (isPause.get() || isGameOver.get()) return;
 
-        updateBrickPanelPosition(brick);
+        updateFallingBrickPosition(brick);
 
         int[][] shape = brick.getBrickData();
 
@@ -644,9 +652,28 @@ public class GuiController implements Initializable {
         updateHoldPieceDisplay(brick);
     }
 
-    private void updateBrickPanelPosition(ViewData brick) {
-        brickPanel.setLayoutX(gamePanel.getLayoutX() + brick.getxPosition() * BRICK_SIZE);
-        brickPanel.setLayoutY(gamePanel.getLayoutY() - 42 + brick.getyPosition() * BRICK_SIZE);
+    private void updateFallingBrickPosition(ViewData brick) {
+
+        // Remove previous falling-brick rectangles
+        gamePanel.getChildren().removeIf(n -> n instanceof Rectangle && n.getUserData() == "falling");
+
+        int[][] shape = brick.getBrickData();
+
+        for (int y = 0; y < shape.length; y++)
+            for (int x = 0; x < shape[y].length; x++)
+                if (shape[y][x] != 0) {
+                    Rectangle r = rectangles[y][x];
+                    r.setUserData("falling");   // mark so we can remove next frame
+                    r.setFill(getFillColor(shape[y][x]));
+                    r.setArcWidth(8);
+                    r.setArcHeight(8);
+
+                    int boardX = brick.getxPosition() + x;
+                    int boardY = brick.getyPosition() + y - 2;
+
+                    if (boardY >= 0)
+                        gamePanel.add(r, boardX, boardY);
+                }
     }
 
     private void drawGhost(ViewData brick) {
@@ -787,7 +814,7 @@ public class GuiController implements Initializable {
     public void gameOver() {
 
         SoundManager.stopBGM();
-        SoundManager.play("gameover");
+        SoundManager.playGameOver();
 
         // Stop timers
         if (timeLine != null) timeLine.stop();
@@ -796,22 +823,33 @@ public class GuiController implements Initializable {
 
         isGameOver.set(true);
 
-        // ---------- SPRINT MODE CUSTOM END SCREEN ----------
-        // -------- SPRINT MODE END --------
+        // ---------- SPRINT MODE ----------
         if (isSprintMode) {
 
             if (sprintTimer != null) sprintTimer.stop();
 
-            double finalTime = sprintTime;   // Now contains the correct measured time
-
-            gameOverPanel.hideGameOverTitle();
             int finalScore = Integer.parseInt(scoreLabel.getText().replace("SCORE: ", "").trim());
-            gameOverPanel.showSprintResult(sprintTime, sprintTarget, finalScore);
+            double finalTime = sprintTime;
+            int lines = sprintLinesCleared;
+
+            // SUCCESS
+            if (lines >= sprintTarget) {
+                gameOverPanel.showSprintResult(finalTime, sprintTarget, finalScore);
+            }
+            // FAILURE
+            else {
+                gameOverPanel.showSprintFailure(
+                        lines,
+                        finalScore,
+                        finalTime
+                );
+            }
 
             gameOverPanel.setVisible(true);
             gameOverPanel.toFront();
             return;
         }
+
         // ---------- NORMAL GAME OVER (Marathon + Time Trial) ----------
         String scoreText = scoreLabel.getText().replace("SCORE: ", "");
         int finalScore;
@@ -826,6 +864,41 @@ public class GuiController implements Initializable {
 
         gameOverPanel.setVisible(true);
         gameOverPanel.toFront();
+    }
+
+    public void gameOver(int linesCleared) {
+
+        SoundManager.stopBGM();
+        SoundManager.playGameOver();
+
+        if (timeLine != null) timeLine.stop();
+        if (timeTrialTimeline != null) timeTrialTimeline.stop();
+        if (sprintTimer != null) sprintTimer.stop();
+
+        isGameOver.set(true);
+
+        if (isSprintMode) {
+
+            double finalTime = sprintTime;
+            int finalScore = Integer.parseInt(scoreLabel.getText().replace("SCORE: ", "").trim());
+
+            // SUCCESS
+            if (linesCleared >= sprintTarget) {
+                gameOverPanel.hideGameOverTitle();
+                gameOverPanel.showSprintResult(finalTime, sprintTarget, finalScore);
+            }
+            // FAILURE
+            else {
+                gameOverPanel.showSprintFailure(linesCleared, finalScore, finalTime);
+            }
+
+            gameOverPanel.setVisible(true);
+            gameOverPanel.toFront();
+            return;
+        }
+
+        // If not sprint, fallback to normal gameOver()
+        gameOver();
     }
 
     // ===========================
@@ -900,25 +973,24 @@ public class GuiController implements Initializable {
         linesProperty.addListener((o, oldVal, newVal) -> {
             linesLabel.setText(String.valueOf(newVal));
 
+            if (isSprintMode) {
+                sprintLinesCleared = newVal.intValue();   // <-- FIX SPRINT SCORE
+            }
+
             if (isSprintMode && newVal.intValue() >= sprintTarget) {
-                sprintCompleted();
+                sprintCompleted(newVal.intValue());
             }
         });
 
         linesLabel.setText(String.valueOf(linesProperty.get()));
     }
 
-    private void sprintCompleted() {
+    private void sprintCompleted(int linesCleared) {
 
-        if (sprintTimeline != null) sprintTimeline.stop();
+        if (sprintTimer != null) sprintTimer.stop();
         isGameOver.set(true);
 
-        // WAIT 1 FRAME so score label updates from the final line clear
-        Platform.runLater(() -> {
-
-            // Now the score label contains the correct updated score
-            gameOver();
-        });
+        Platform.runLater(() -> gameOver(linesCleared));
     }
 
     private void finishSprintMode() {
@@ -940,29 +1012,48 @@ public class GuiController implements Initializable {
 
         if (enabled) {
             timerLabel.setVisible(true);
-            timerLabel.setText("TIME: 60");
+            timerPanel.setVisible(true);         // << ADD THIS
+            timerLabel.setText("60");
             remainingTime = 60;
             startTimeTrialTimer();
         } else {
             timerLabel.setVisible(false);
+            timerPanel.setVisible(false);        // << ADD THIS
         }
     }
 
     public void setGameMode(boolean timeTrial, boolean sprint, int sprintTarget) {
+
         this.isTimeTrialMode = timeTrial;
         this.isSprintMode = sprint;
         this.sprintTarget = sprintTarget;
 
+        updateTimerPanelVisibility();
+
+        // --- Marathon Mode (neither time trial nor sprint) ---
+        if (!timeTrial && !sprint) {
+            timerLabel.setVisible(false);  // <--- HIDE TIMER IN MARATHON MODE
+            timerPanel.setVisible(false);
+        }
+
+        // --- Time Trial Mode ---
         if (isTimeTrialMode) {
             remainingTime = 60;
             timerLabel.setVisible(true);
-            timerLabel.setText("TIME: 60");
+            timerLabel.setText("60");
             startTimeTrialTimer();
         }
 
+        // --- Sprint Mode ---
         if (isSprintMode) {
             enableSprintMode(sprintTarget);
+            timerLabel.setVisible(true);
         }
+    }
+
+    private void updateTimerPanelVisibility() {
+        boolean show = isTimeTrialMode || isSprintMode;
+        timerPanel.setVisible(show);
     }
 
     public void enableSprintMode(int targetLines) {
@@ -979,6 +1070,7 @@ public class GuiController implements Initializable {
         sprintTimer.setCycleCount(Timeline.INDEFINITE);
         sprintTimer.play();
 
+        timerPanel.setVisible(true);
         timerLabel.setVisible(true);
         timerLabel.setText("0.00");
     }
@@ -1020,7 +1112,7 @@ public class GuiController implements Initializable {
         timeTrialTimeline = new Timeline(
                 new KeyFrame(Duration.seconds(1), e -> {
                     remainingTime--;
-                    timerLabel.setText("TIME: " + remainingTime);
+                    timerLabel.setText(String.valueOf(remainingTime));
 
                     if (remainingTime <= 0) {
                         timeTrialTimeline.stop();
@@ -1052,7 +1144,7 @@ public class GuiController implements Initializable {
                 Duration.millis(10),   // update every 0.01 sec (10 ms)
                 e -> {
                     sprintTime += 0.01;
-                    timerLabel.setText(String.format("TIME: %.2f", sprintTime));
+                    timerLabel.setText(String.format("%.2f", sprintTime));
                 }
         ));
 

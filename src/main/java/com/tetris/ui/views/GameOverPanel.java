@@ -30,8 +30,12 @@ public class GameOverPanel extends BorderPane {
     public GameOverPanel() {
         // Game Over Label
         final Label gameOverLabel = new Label("GAME OVER");
-        gameOverLabel.getStyleClass().add("gameOverStyle");
-        gameOverLabel.setFont(new Font(36));
+        gameOverLabel.setStyle(
+                "-fx-text-fill: #2FE4FF;"
+                        + "-fx-font-size: 42px;"
+                        + "-fx-font-weight: bold;"
+                        + "-fx-effect: dropshadow(gaussian, #2FE4FF, 20, 0.4, 0, 0);"
+        );
         gameOverLabel.setTextAlignment(TextAlignment.CENTER);
 
         // Final Score Display
@@ -41,7 +45,11 @@ public class GameOverPanel extends BorderPane {
 
         // High Scores Title
         highScoreTitle = new Label("HIGH SCORES");
-        highScoreTitle.setStyle("-fx-text-fill: #4CAF50; -fx-font-size: 18px; -fx-font-weight: bold;");
+        highScoreTitle.setStyle(
+                "-fx-text-fill: #2FE4FF;"
+                        + "-fx-font-size: 20px;"
+                        + "-fx-font-weight: bold;"
+        );
         highScoreTitle.setTextAlignment(TextAlignment.CENTER);
 
         // High Scores Container
@@ -117,14 +125,25 @@ public class GameOverPanel extends BorderPane {
         mainMenuButton = createStyledButton("MAIN MENU", "#2196F3", "#1976D2");
 
 // NEW: Button layout
-        HBox buttonBox = new HBox(20);
+        VBox buttonBox = new VBox(10);
         buttonBox.setAlignment(Pos.CENTER);
-        buttonBox.getChildren().addAll(restartButton, mainMenuButton, resetScoresButton);
+
+// Restart button alone
+        buttonBox.getChildren().add(restartButton);
+
+// Main Menu button full width
+        mainMenuButton.setPrefWidth(180);
+        buttonBox.getChildren().add(mainMenuButton);
+
+// Reset scores button below main menu
+        resetScoresButton.setPrefWidth(180);
+        buttonBox.getChildren().add(resetScoresButton);
+
 
         // Layout
-        contentBox = new VBox(15);
+        contentBox = new VBox(8);
         contentBox.setAlignment(Pos.TOP_CENTER);
-        contentBox.setPadding(new Insets(40, 20, 20, 20));
+        contentBox.setPadding(new Insets(0, 20, 10, 20));
         contentBox.setPrefWidth(Double.MAX_VALUE);
         contentBox.getChildren().addAll(
                 gameOverLabel,
@@ -137,14 +156,19 @@ public class GameOverPanel extends BorderPane {
         );
 
         // Set at top of BorderPane
-        setTop(contentBox);
-        BorderPane.setAlignment(contentBox, Pos.CENTER);
-        setCenter(null);
+        setCenter(contentBox);
         setBottom(null);
         BorderPane.setMargin(contentBox, new Insets(0, 0, 0, 0));
 
         // Semi-transparent background
-        setStyle("-fx-background-color: rgba(0, 0, 0, 0.85);");
+        setStyle(
+                "-fx-background-color: rgba(0,0,0,0.80);"
+                        + "-fx-border-color: rgba(0,255,255,0.4);"
+                        + "-fx-border-width: 3;"
+                        + "-fx-border-radius: 12;"
+                        + "-fx-background-radius: 12;"
+        );
+
         setPrefSize(600, 500);
     }
 
@@ -153,9 +177,17 @@ public class GameOverPanel extends BorderPane {
 
         if (text.equals("RESTART")) {
             // Restart button style
-            String baseStyle = "-fx-font-size: 18px; -fx-font-weight: bold; -fx-padding: 10 30; " +
-                    "-fx-background-color: " + color + "; -fx-text-fill: white; " +
-                    "-fx-cursor: hand; -fx-background-radius: 5; -fx-alignment: center;";
+            String baseStyle =
+                    "-fx-font-size: 20px;"
+                            + "-fx-font-weight: bold;"
+                            + "-fx-padding: 6 25;"
+                            + "-fx-background-color: rgba(0,0,0,0.6);"
+                            + "-fx-border-color: #2FE4FF;"
+                            + "-fx-border-width: 3;"
+                            + "-fx-background-radius: 12;"
+                            + "-fx-border-radius: 12;"
+                            + "-fx-text-fill: white;"
+                            + "-fx-effect: dropshadow(gaussian, #2FE4FF, 15, 0.4, 0, 0);";
 
             button.setStyle(baseStyle);
             button.setPrefWidth(220);
@@ -168,17 +200,23 @@ public class GameOverPanel extends BorderPane {
             );
         } else {
             // Reset button style
-            String baseStyle = "-fx-font-size: 12px; -fx-font-weight: bold; -fx-padding: 5 15; " +
-                    "-fx-background-color: transparent; -fx-text-fill: " + color + "; " +
-                    "-fx-cursor: hand; -fx-border-color: " + color + "; " +
-                    "-fx-border-width: 1; -fx-border-radius: 3; -fx-alignment: center;";
+            String baseStyle =
+                    "-fx-font-size: 20px;"
+                            + "-fx-font-weight: bold;"
+                            + "-fx-padding: 6 25;"
+                            + "-fx-background-color: rgba(0,0,0,0.6);"
+                            + "-fx-border-color: #2FE4FF;"
+                            + "-fx-border-width: 3;"
+                            + "-fx-background-radius: 12;"
+                            + "-fx-border-radius: 12;"
+                            + "-fx-text-fill: white;"
+                            + "-fx-effect: dropshadow(gaussian, #2FE4FF, 15, 0.4, 0, 0);";
 
             button.setStyle(baseStyle);
             button.setPrefWidth(120);
 
             button.setOnMouseEntered(e ->
-                    button.setStyle(baseStyle.replace(color, hoverColor)
-                            .replace("border-color: " + color, "border-color: " + hoverColor))
+                    button.setStyle(baseStyle.replace("0.6", "0.9"))
             );
             button.setOnMouseExited(e ->
                     button.setStyle(baseStyle)
@@ -298,37 +336,53 @@ public class GameOverPanel extends BorderPane {
     }
 
     public void hideGameOverTitle() {
-        // The first child in contentBox is the GAME OVER label
-        ((Label)((VBox)getTop()).getChildren().get(0)).setVisible(false);
+        // GAME OVER label is the FIRST element inside contentBox
+        Label gameOverLabel = (Label) contentBox.getChildren().get(0);
+        gameOverLabel.setVisible(false);
     }
 
     public void showSprintResult(double timeSeconds, int targetLines, int finalScore) {
 
-        // Hide normal game over UI
-        finalScoreLabel.setVisible(false);
+        finalScoreLabel.setVisible(true);                 // <-- ADD
+        finalScoreLabel.setText("Final Score: " + finalScore);   // <-- ADD
+
+        finalScoreLabel.setStyle("-fx-text-fill: #FFD700; -fx-font-size: 24px; -fx-font-weight: bold;");
+
+        // Hide marathon UI
         highScoreContainer.setVisible(false);
         resetScoresButton.setVisible(false);
 
-        // Show sprint-specific UI
+        // Show sprint UI
         sprintTitleLabel.setVisible(true);
         sprintInfoLabel.setVisible(true);
 
         sprintTitleLabel.setText("SPRINT COMPLETE!");
-
         sprintInfoLabel.setText(
                 "Cleared " + targetLines + " lines\n" +
                         "Score: " + finalScore + "\n" +
                         "Time: " + String.format("%.2f seconds", timeSeconds)
         );
 
-        // Center the PLAY AGAIN button
         restartButton.setText("PLAY AGAIN");
-        restartButton.setPrefWidth(200);                 // ★ Center nicely
-        BorderPane.setAlignment(restartButton, Pos.CENTER);
+    }
 
-        // Make sure sprint info is centered too
-        BorderPane.setAlignment(sprintTitleLabel, Pos.CENTER);
-        BorderPane.setAlignment(sprintInfoLabel, Pos.CENTER);
+    public void showSprintFailure(int linesCleared, int finalScore, double timeSeconds) {
+
+        finalScoreLabel.setVisible(true);                         // <-- ADD
+        finalScoreLabel.setText("Final Score: " + finalScore);    // <-- ADD
+
+        sprintTitleLabel.setVisible(false);
+        highScoreContainer.setVisible(false);
+        resetScoresButton.setVisible(false);
+
+        sprintInfoLabel.setVisible(true);
+        sprintInfoLabel.setText(
+                "Cleared " + linesCleared + " lines\n" +
+                        "Score: " + finalScore + "\n" +
+                        "Time: " + String.format("%.2f seconds", timeSeconds)
+        );
+
+        restartButton.setText("TRY AGAIN");
     }
 
     public void centerContent() {

@@ -6,6 +6,8 @@
         <?import com.tetris.ui.views.GameOverPanel?>
         <?import java.net.URL?>
         <?import javafx.geometry.Insets?>
+        <?import javafx.scene.layout.HBox?>
+
 
 <StackPane xmlns:fx="http://javafx.com/fxml"
            fx:controller="com.tetris.ui.controllers.GuiController"
@@ -34,13 +36,6 @@
                style="-fx-text-fill: white; -fx-font-size: 16; -fx-font-weight: bold;" />
     </Pane>
 
-    <Label fx:id="timerLabel"
-           text="TIME: 60"
-           layoutX="15"
-           layoutY="15"
-           visible="false"
-           style="-fx-text-fill: white; -fx-font-size: 20px; -fx-font-weight: bold;" />
-
     <!-- INFO PANEL -->
     <Pane fx:id="infoPanel"
           layoutX="250" layoutY="60"
@@ -61,13 +56,20 @@
            layoutX="250" layoutY="145"
            style="-fx-text-fill: #FFD700; -fx-font-size: 14;"/>
 
-    <GridPane fx:id="brickPanel" vgap="1" hgap="1"/>
+    <StackPane fx:id="gameBoard" styleClass="gameBoard">
 
-    <BorderPane fx:id="gameBoard" styleClass="gameBoard">
-        <center>
-            <GridPane fx:id="gamePanel" hgap="1" vgap="1" layoutX="40" layoutY="30"/>
-        </center>
-    </BorderPane>
+        <!-- background layer (cyan glow, tint) -->
+        <Pane fx:id="backgroundLayer"
+              style="-fx-background-color: rgba(0,255,255,0.1);"
+              mouseTransparent="true"
+              pickOnBounds="false"/>
+
+        <!-- blocks layer (blocks drawn HERE, on top) -->
+        <GridPane fx:id="gamePanel"
+                  hgap="1" vgap="1"
+                  mouseTransparent="false"/>
+
+    </StackPane>
 
     <!-- NEXT PIECES PANEL -->
     <Pane fx:id="nextPiecePane"
@@ -94,30 +96,68 @@
     </Pane>
 
     <Button fx:id="pauseButton"
-            text="PAUSE"
+            text="⏸"
             onAction="#togglePause"
             layoutX="385"
             layoutY="120"
-            prefWidth="100" prefHeight="35"
-            style="-fx-background-color: black; -fx-border-color: white; -fx-text-fill: white;"/>
+            prefWidth="40"
+            prefHeight="40"
+            style="
+            -fx-font-size: 24;
+            -fx-text-fill: white;
+            -fx-background-color: black;
+            -fx-border-color: white;
+            -fx-border-width: 2;
+            -fx-background-radius: 8;
+            -fx-border-radius: 8;
+        "/>
+
+    <!-- TIMER PANEL -->
+    <HBox fx:id="timerPanel"
+          alignment="CENTER"
+          spacing="5"
+          style="-fx-background-color: rgba(0,0,0,0.35);
+             -fx-border-color: #2FE4FF;
+             -fx-border-width: 2;
+             -fx-padding: 4 10;
+             -fx-background-radius: 6;
+             -fx-border-radius: 6;">
+
+        <Label text="TIME"
+               style="-fx-text-fill: #2FE4FF; -fx-font-size: 14; -fx-font-weight: bold;"/>
+
+        <Label fx:id="timerLabel"
+               text="0"
+               style="-fx-text-fill: white; -fx-font-size: 16; -fx-font-weight: bold;"/>
+    </HBox>
 
     <!-- PAUSE OVERLAY -->
-    <Pane fx:id="pauseOverlay"
-          prefWidth="500" prefHeight="500"
-          visible="false"
-          style="-fx-background-color: rgba(0,0,0,0.7);">
+    <StackPane fx:id="pauseOverlay"
+               prefWidth="500" prefHeight="500"
+               visible="false"
+               style="-fx-background-color: rgba(0,0,0,0.7);">
 
-        <VBox alignment="CENTER" spacing="14" layoutX="150" layoutY="150"
-              prefWidth="200" prefHeight="250"
-              style="-fx-background-color: #d9e1f2; -fx-border-color: #445;">
-            <Label text="PAUSED" style="-fx-font-size: 22;"/>
-            <Button fx:id="resumeButton" text="Resume"/>
-            <Button fx:id="restartButton" text="Restart"/>
-            <Button fx:id="mainMenuButton" text="Main Menu"/>
-            <Button fx:id="settingsButton" text="Settings"/>
-            <Button fx:id="quitButton" text="Quit"/>
+        <VBox fx:id="pauseMenu"
+              alignment="CENTER"
+              spacing="14"
+              prefWidth="260"
+              style="-fx-background-color: rgba(255,255,255,0.10);
+                 -fx-border-color: #2fe4ff;
+                 -fx-border-width: 2;
+                 -fx-background-radius: 12;
+                 -fx-border-radius: 12;">
+
+            <Label text="PAUSED"
+                   style="-fx-font-size: 26; -fx-text-fill: white; -fx-font-weight: bold;"/>
+
+            <Button fx:id="resumeButton" text="Resume" styleClass="settings-button"/>
+            <Button fx:id="restartButton" text="Restart" styleClass="settings-button"/>
+            <Button fx:id="mainMenuButton" text="Main Menu" styleClass="settings-button"/>
+            <Button fx:id="settingsButton" text="Settings" styleClass="settings-button"/>
+            <Button fx:id="quitButton" text="Quit" styleClass="settings-button"/>
+
         </VBox>
-    </Pane>
+    </StackPane>
 
     <Group fx:id="groupNotification" layoutX="20" layoutY="20"/>
 

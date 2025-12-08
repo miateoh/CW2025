@@ -52,7 +52,19 @@ public class SettingsController {
         backButton.setOnAction(e -> goBack());
     }
 
+    private Runnable onBackAction;
+
+    public void setOnBack(Runnable action) {
+        this.onBackAction = action;
+    }
+
     private void goBack() {
+        if (onBackAction != null) {
+            onBackAction.run();
+            return;
+        }
+
+        // Default behavior (from main menu)
         try {
             FXMLLoader loader = new FXMLLoader(
                     Main.class.getClassLoader().getResource("main_menu.fxml")
