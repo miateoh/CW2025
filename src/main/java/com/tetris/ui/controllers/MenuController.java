@@ -17,6 +17,9 @@ public class MenuController {
 
     @FXML
     public void initialize() {
+        if (!SoundManager.isBGMPlaying()) {
+            SoundManager.playBGM("background_music.wav");
+        }
 
         // -----------------------
         //   CLICK SOUND
@@ -34,6 +37,7 @@ public class MenuController {
         quitButton.setOnAction(e -> {
             SoundManager.play("menu");
             System.exit(0);
+            SoundManager.stopBGM();
         });
     }
 

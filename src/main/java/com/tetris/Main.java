@@ -19,6 +19,8 @@ public class Main extends Application {
 
         SoundManager.load();
 
+        SoundManager.playBGM("background_music.wav");
+
         FXMLLoader loader = new FXMLLoader(
                 getClass().getClassLoader().getResource("main_menu.fxml")
         );

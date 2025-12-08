@@ -2,6 +2,7 @@ package com.tetris.ui.controllers;
 
 import com.tetris.Main;
 import com.tetris.game.logic.GameController;
+import com.tetris.sound.SoundManager;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;

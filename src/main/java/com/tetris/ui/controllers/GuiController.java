@@ -258,6 +258,8 @@ public class GuiController implements Initializable {
         isPause.set(true);
         SoundManager.play("pause");
 
+        SoundManager.pauseBGM();
+
         if (timeLine != null) timeLine.pause();
         if (isTimeTrialMode && timeTrialTimeline != null)
             timeTrialTimeline.pause();
@@ -279,6 +281,8 @@ public class GuiController implements Initializable {
         isPause.set(false);
         SoundManager.play("unpause");
 
+        SoundManager.resumeBGM();
+
         if (timeLine != null) timeLine.play();
         if (isTimeTrialMode && timeTrialTimeline != null)
             timeTrialTimeline.play();
@@ -299,6 +303,9 @@ public class GuiController implements Initializable {
 
         // Stop sprint
         if (sprintTimer != null) sprintTimer.stop();
+
+        SoundManager.stopBGM();
+        SoundManager.playBGM("background_music.wav");
 
         isPause.set(false);
         isGameOver.set(false);
@@ -349,6 +356,9 @@ public class GuiController implements Initializable {
             });
 
             delay.play();
+
+            SoundManager.playBGM("background_music.wav");
+            timeLine.play();
         }
 
         // Restart fall speed
@@ -750,6 +760,9 @@ public class GuiController implements Initializable {
     // ===========================
 
     public void gameOver() {
+
+        SoundManager.stopBGM();
+        SoundManager.playGameOver();
 
         // Stop timers
         if (timeLine != null) timeLine.stop();
