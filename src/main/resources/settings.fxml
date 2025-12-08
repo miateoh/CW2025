@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.geometry.*?>
+<?import java.net.URL?>
+
+<StackPane xmlns:fx="http://javafx.com/fxml"
+           fx:controller="com.tetris.ui.controllers.SettingsController"
+           styleClass="settings-root">
+
+    <stylesheets>
+        <URL value="@window_style.css"/>
+    </stylesheets>
+
+    <VBox alignment="CENTER" spacing="35">
+
+        <!-- TITLE -->
+        <Label text="SETTINGS" styleClass="settings-title"/>
+
+        <!-- MUSIC SECTION -->
+        <VBox alignment="CENTER" spacing="12">
+            <Label text="Music Volume" styleClass="settings-label"/>
+            <Slider fx:id="bgmSlider"
+                    min="0" max="1" value="0.35"
+                    prefWidth="300"
+                    styleClass="settings-slider"/>
+            <CheckBox fx:id="bgmMute" text="Mute Music" styleClass="settings-checkbox"/>
+        </VBox>
+
+        <!-- SFX SECTION -->
+        <VBox alignment="CENTER" spacing="12">
+            <Label text="Sound Effects Volume" styleClass="settings-label"/>
+            <Slider fx:id="sfxSlider"
+                    min="0" max="1" value="1"
+                    prefWidth="300"
+                    styleClass="settings-slider"/>
+            <CheckBox fx:id="sfxMute" text="Mute SFX" styleClass="settings-checkbox"/>
+        </VBox>
+
+        <!-- BACK BUTTON -->
+        <Button fx:id="backButton" text="BACK" styleClass="settings-button"/>
+
+    </VBox>
+
+</StackPane>

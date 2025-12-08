@@ -1,26 +1,168 @@
-<?import com.comp2042.GameOverPanel?>
-<?import javafx.scene.control.Button?>
-<?import javafx.scene.control.Label?>
-<?import javafx.scene.control.ToggleButton?>
-<?import javafx.scene.Group?>
-<?import javafx.scene.layout.*?>
-<?import javafx.scene.text.Text?>
-<?import java.net.URL?>
-<Pane fx:controller="com.comp2042.GuiController"
-      xmlns:fx="http://javafx.com/fxml">
-    <GridPane fx:id="brickPanel" vgap="1" hgap="1"/>
-    <BorderPane styleClass="gameBoard" fx:id="gameBoard">
-        <center>
-            <GridPane fx:id="gamePanel" hgap="1" vgap="1" layoutY="30" layoutX="40"/>
-        </center>
-    </BorderPane>
+<?xml version="1.0" encoding="UTF-8"?>
 
-    <Group fx:id="groupNotification" layoutX="14" layoutY="203">
-        <VBox alignment="CENTER">
-            <GameOverPanel fx:id="gameOverPanel"/>
+        <?import javafx.scene.layout.*?>
+        <?import javafx.scene.control.*?>
+        <?import javafx.scene.Group?>
+        <?import com.tetris.ui.views.GameOverPanel?>
+        <?import java.net.URL?>
+        <?import javafx.geometry.Insets?>
+        <?import javafx.scene.layout.HBox?>
+
+
+<StackPane xmlns:fx="http://javafx.com/fxml"
+           fx:controller="com.tetris.ui.controllers.GuiController"
+           fx:id="rootPane"
+           styleClass="root">
+
+<stylesheets>
+    <URL value="@window_style.css"/>
+</stylesheets>
+
+<Pane fx:id="gameContainer"
+      prefWidth="500" prefHeight="500"
+      maxWidth="500" maxHeight="500"
+      minWidth="500" minHeight="500"
+      style="-fx-background-color: rgba(0,0,0,0.20);">
+
+    <!-- SCORE PANEL -->
+    <Pane fx:id="scorePanel"
+          layoutX="250" layoutY="15"
+          prefWidth="120" prefHeight="40"
+          style="-fx-background-color: rgba(0,0,0,0.55); -fx-border-color: white; -fx-border-width: 2;">
+        <Label fx:id="scoreLabel"
+               text="SCORE: 0"
+               layoutX="20"
+               layoutY="10"
+               style="-fx-text-fill: white; -fx-font-size: 16; -fx-font-weight: bold;" />
+    </Pane>
+
+    <!-- INFO PANEL -->
+    <Pane fx:id="infoPanel"
+          layoutX="250" layoutY="60"
+          prefWidth="120" prefHeight="80"
+          style="-fx-background-color: rgba(0,0,0,0.55); -fx-border-color: white; -fx-border-width: 2;">
+
+        <Label text="LEVEL" layoutX="40" layoutY="5" style="-fx-text-fill: white;"/>
+        <Label fx:id="levelLabel" text="1" layoutX="50" layoutY="20"
+               style="-fx-text-fill: white; -fx-font-size: 20;"/>
+        <Label text="LINES" layoutX="40" layoutY="45" style="-fx-text-fill: white;"/>
+        <Label fx:id="linesLabel" text="0" layoutX="50" layoutY="60"
+               style="-fx-text-fill: white; -fx-font-size: 20;"/>
+    </Pane>
+
+    <Label fx:id="comboLabel"
+           text="COMBO: 0x"
+           visible="false"
+           layoutX="250" layoutY="145"
+           style="-fx-text-fill: #FFD700; -fx-font-size: 14;"/>
+
+    <StackPane fx:id="gameBoard" styleClass="gameBoard">
+
+        <!-- background layer (cyan glow, tint) -->
+        <Pane fx:id="backgroundLayer"
+              style="-fx-background-color: rgba(0,255,255,0.1);"
+              mouseTransparent="true"
+              pickOnBounds="false"/>
+
+        <!-- blocks layer (blocks drawn HERE, on top) -->
+        <GridPane fx:id="gamePanel"
+                  hgap="1" vgap="1"
+                  mouseTransparent="false"/>
+
+    </StackPane>
+
+    <!-- NEXT PIECES PANEL -->
+    <Pane fx:id="nextPiecePane"
+          layoutX="250" layoutY="170"
+          prefWidth="120" prefHeight="240"
+          style="-fx-background-color: rgba(0,0,0,0.55); -fx-border-color: white;">
+
+        <Label text="NEXT" layoutX="40" layoutY="8" style="-fx-text-fill: white;"/>
+
+        <VBox layoutX="10" layoutY="30" spacing="-2">
+            <GridPane fx:id="nextPiecePanel1" hgap="1" vgap="1"/>
+            <GridPane fx:id="nextPiecePanel2" hgap="1" vgap="1"/>
+            <GridPane fx:id="nextPiecePanel3" hgap="1" vgap="1"/>
         </VBox>
-    </Group>
-    <stylesheets>
-        <URL value="@window_style.css"/>
-    </stylesheets>
+    </Pane>
+
+    <!-- HOLD PANEL -->
+    <Pane fx:id="holdPiecePane"
+          layoutX="385" layoutY="15"
+          prefWidth="100" prefHeight="90"
+          style="-fx-background-color: rgba(0,0,0,0.55); -fx-border-color: white;">
+        <Label text="HOLD" layoutX="30" layoutY="8" style="-fx-text-fill: white;"/>
+        <GridPane fx:id="holdPieceGrid" layoutX="22" layoutY="30"/>
+    </Pane>
+
+    <Button fx:id="pauseButton"
+            text="⏸"
+            onAction="#togglePause"
+            layoutX="385"
+            layoutY="120"
+            prefWidth="40"
+            prefHeight="40"
+            style="
+            -fx-font-size: 24;
+            -fx-text-fill: white;
+            -fx-background-color: black;
+            -fx-border-color: white;
+            -fx-border-width: 2;
+            -fx-background-radius: 8;
+            -fx-border-radius: 8;
+        "/>
+
+    <!-- TIMER PANEL -->
+    <HBox fx:id="timerPanel"
+          alignment="CENTER"
+          spacing="5"
+          style="-fx-background-color: rgba(0,0,0,0.35);
+             -fx-border-color: #2FE4FF;
+             -fx-border-width: 2;
+             -fx-padding: 4 10;
+             -fx-background-radius: 6;
+             -fx-border-radius: 6;">
+
+        <Label text="TIME"
+               style="-fx-text-fill: #2FE4FF; -fx-font-size: 14; -fx-font-weight: bold;"/>
+
+        <Label fx:id="timerLabel"
+               text="0"
+               style="-fx-text-fill: white; -fx-font-size: 16; -fx-font-weight: bold;"/>
+    </HBox>
+
+    <!-- PAUSE OVERLAY -->
+    <StackPane fx:id="pauseOverlay"
+               prefWidth="500" prefHeight="500"
+               visible="false"
+               style="-fx-background-color: rgba(0,0,0,0.7);">
+
+        <VBox fx:id="pauseMenu"
+              alignment="CENTER"
+              spacing="14"
+              prefWidth="260"
+              style="-fx-background-color: rgba(255,255,255,0.10);
+                 -fx-border-color: #2fe4ff;
+                 -fx-border-width: 2;
+                 -fx-background-radius: 12;
+                 -fx-border-radius: 12;">
+
+            <Label text="PAUSED"
+                   style="-fx-font-size: 26; -fx-text-fill: white; -fx-font-weight: bold;"/>
+
+            <Button fx:id="resumeButton" text="Resume" styleClass="settings-button"/>
+            <Button fx:id="restartButton" text="Restart" styleClass="settings-button"/>
+            <Button fx:id="mainMenuButton" text="Main Menu" styleClass="settings-button"/>
+            <Button fx:id="settingsButton" text="Settings" styleClass="settings-button"/>
+            <Button fx:id="quitButton" text="Quit" styleClass="settings-button"/>
+
+        </VBox>
+    </StackPane>
+
+    <Group fx:id="groupNotification" layoutX="20" layoutY="20"/>
+
+    <GameOverPanel fx:id="gameOverPanel" visible="false"
+                   prefWidth="500" prefHeight="500"/>
+
 </Pane>
+</StackPane>

@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.image.Image?>
+<?import java.net.URL?>
+
+<StackPane xmlns:fx="http://javafx.com/fxml"
+           fx:controller="com.tetris.ui.controllers.MenuController">
+
+    <!-- Apply the theme -->
+    <stylesheets>
+        <URL value="@window_style.css"/>
+    </stylesheets>
+
+    <VBox alignment="CENTER" spacing="35">
+
+        <!-- TETRIS LOGO -->
+        <ImageView fitWidth="380" preserveRatio="true" styleClass="title-logo">
+            <image>
+                <Image url="@ui/tetris_logo.png"/>
+            </image>
+        </ImageView>
+
+        <!-- Buttons -->
+        <Button text="START GAME" fx:id="startButton"/>
+        <Button text="HIGH SCORES" fx:id="scoresButton"/>
+        <Button text="SETTINGS" fx:id="settingsButton"/>
+        <Button text="QUIT" fx:id="quitButton"/>
+
+    </VBox>
+
+</StackPane>

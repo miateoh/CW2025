@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import java.net.URL?>
+
+<StackPane xmlns:fx="http://javafx.com/fxml"
+           fx:controller="com.tetris.ui.controllers.HighScoresController"
+           style="-fx-background-color: rgba(0,0,0,0.75);">
+
+    <stylesheets>
+        <URL value="@window_style.css"/>
+    </stylesheets>
+
+    <VBox alignment="CENTER" spacing="20">
+
+        <Label text="HIGH SCORES"
+               style="-fx-text-fill: white; -fx-font-size: 40; -fx-font-weight: bold;"/>
+
+        <VBox fx:id="scoresList" spacing="5" alignment="CENTER"/>
+
+        <Button text="BACK"
+                fx:id="backButton"
+                style="-fx-font-size: 20; -fx-text-fill: white; -fx-background-color: black;
+                       -fx-border-color: white; -fx-border-width: 2; -fx-padding: 8 30;"/>
+
+    </VBox>
+
+</StackPane>

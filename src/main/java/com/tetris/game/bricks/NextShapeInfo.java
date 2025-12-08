@@ -1,0 +1,26 @@
+/**
+ * Stores information about upcoming Tetromino shapes used in the
+ * next-piece preview panel.
+ */
+package com.tetris.game.bricks;
+
+import com.tetris.game.board.MatrixOperations;
+
+public final class NextShapeInfo {
+
+    private final int[][] shape;
+    private final int position;
+
+    public NextShapeInfo(final int[][] shape, final int position) {
+        this.shape = shape;
+        this.position = position;
+    }
+
+    public int[][] getShape() {
+        return MatrixOperations.copy(shape);
+    }
+
+    public int getPosition() {
+        return position;
+    }
+}
