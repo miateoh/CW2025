@@ -14,12 +14,16 @@ public class MenuController {
     @FXML private Button startButton;
     @FXML private Button scoresButton;
     @FXML private Button quitButton;
+    @FXML private Button settingsButton;
 
     @FXML
     public void initialize() {
-        if (!SoundManager.isBGMPlaying()) {
-            SoundManager.playBGM("background_music.wav");
-        }
+        SoundManager.playBGM("background_music.wav");
+
+        settingsButton.setOnAction(e -> {
+            SoundManager.play("menu");
+            openSettings();
+        });
 
         // -----------------------
         //   CLICK SOUND
@@ -69,6 +73,21 @@ public class MenuController {
             Parent root = loader.load();
 
             Stage stage = (Stage) scoresButton.getScene().getWindow();
+            stage.setScene(new Scene(root, 700, 700));
+
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+    }
+
+    private void openSettings() {
+        try {
+            FXMLLoader loader = new FXMLLoader(
+                    Main.class.getClassLoader().getResource("settings.fxml")
+            );
+            Parent root = loader.load();
+
+            Stage stage = (Stage) settingsButton.getScene().getWindow();
             stage.setScene(new Scene(root, 700, 700));
 
         } catch (Exception ex) {

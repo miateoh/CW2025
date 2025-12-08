@@ -32,6 +32,10 @@
                 style="-fx-font-size: 18; -fx-text-fill: white; -fx-background-color: black;
                        -fx-border-color: white; -fx-border-width: 2; -fx-padding: 8 30;"/>
 
+        <Button fx:id="settingsButton" text="SETTINGS"
+                style="-fx-font-size: 18; -fx-text-fill: white; -fx-background-color: black;
+               -fx-border-color: white; -fx-border-width: 2; -fx-padding: 8 30;"/>
+
     </VBox>
 
 </StackPane>

@@ -4,7 +4,6 @@ import javafx.scene.media.AudioClip;
 import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
 import javafx.util.Duration;
-
 import java.net.URL;
 import java.util.HashMap;
 
@@ -12,8 +11,18 @@ public class SoundManager {
 
     private static final HashMap<String, AudioClip> sounds = new HashMap<>();
 
-    // === NEW === gameover uses MediaPlayer so we can skip silence
+    // Game over MediaPlayer
     private static MediaPlayer gameOverPlayer;
+
+    // Background music
+    private static MediaPlayer bgmPlayer;
+
+    // === Volume settings ===
+    private static double bgmVolume = 0.35;
+    private static double sfxVolume = 1.0;
+
+    private static boolean mutedBGM = false;
+    private static boolean mutedSFX = false;
 
     public static void load() {
         loadSound("rotate", "sounds/click_005.wav");
@@ -28,90 +37,30 @@ public class SoundManager {
         loadSound("combo", "sounds/confirmation_002.wav");
         loadSound("restart", "sounds/bong_001.wav");
 
-        loadGameOverSound();  // <- MediaPlayer version
+        loadGameOverSound();
     }
 
-    // ===================================
-    // GAME OVER SOUND (MediaPlayer)
-    // ===================================
+    // =====================================
+    // GAME OVER SOUND
+    // =====================================
     private static void loadGameOverSound() {
         try {
-            URL resource = SoundManager.class.getClassLoader()
-                    .getResource("sounds/gameover.wav");
+            URL r = SoundManager.class.getClassLoader().getResource("sounds/gameover.wav");
 
-            if (resource == null) {
-                System.out.println("Failed to load gameover.wav");
-                return;
-            }
+            if (r == null) return;
 
-            Media media = new Media(resource.toString());
+            Media media = new Media(r.toString());
             gameOverPlayer = new MediaPlayer(media);
 
-        } catch (Exception e) {
-            System.out.println("GameOver load error:");
-            e.printStackTrace();
-        }
+        } catch (Exception ignored) {}
     }
 
     public static void playGameOver() {
-        if (gameOverPlayer != null) {
-            gameOverPlayer.stop();
+        if (gameOverPlayer == null) return;
 
-            // === Adjust skip amount here (start with 600–900ms) ===
-            gameOverPlayer.seek(Duration.millis(1200));
-
-            gameOverPlayer.play();
-        }
-    }
-
-    public static boolean isBGMPlaying() {
-        return bgmStarted;
-    }
-
-    // ===================================
-    // BACKGROUND MUSIC
-    // ===================================
-
-    private static MediaPlayer bgmPlayer;
-    private static boolean bgmStarted = false;
-
-    public static void playBGM(String filename) {
-        try {
-            // If BGM player already exists, just resume if paused
-            if (bgmPlayer != null) {
-                if (bgmPlayer.getStatus() == MediaPlayer.Status.PAUSED) {
-                    bgmPlayer.play();
-                }
-                return; // DO NOT RESTART
-            }
-
-            // Create BGM only once
-            URL resource = SoundManager.class.getClassLoader()
-                    .getResource("sounds/" + filename);
-
-            if (resource == null) {
-                System.out.println("BGM not found: " + filename);
-                return;
-            }
-
-            Media media = new Media(resource.toString());
-            bgmPlayer = new MediaPlayer(media);
-
-            bgmPlayer.setCycleCount(MediaPlayer.INDEFINITE);
-            bgmPlayer.setVolume(0.35);
-            bgmPlayer.play();
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    public static void stopBGM() {
-        if (bgmPlayer != null) {
-            bgmPlayer.stop();
-            bgmPlayer.dispose();
-            bgmPlayer = null;   // <-- CRITICAL: this prevents ghost players
-        }
+        gameOverPlayer.stop();
+        gameOverPlayer.seek(Duration.millis(1200)); // skip silence
+        gameOverPlayer.play();
     }
 
     public static void pauseBGM() {
@@ -122,23 +71,105 @@ public class SoundManager {
         if (bgmPlayer != null) bgmPlayer.play();
     }
 
-    // ===================================
-    // NORMAL SOUND EFFECTS
-    // ===================================
+    public static boolean isBGMPlaying() {
+        return bgmPlayer != null && bgmPlayer.getStatus() == MediaPlayer.Status.PLAYING;
+    }
 
+    // =====================================
+    // BACKGROUND MUSIC
+    // =====================================
+    public static void playBGM(String filename) {
+        try {
+
+            if (bgmPlayer != null) {
+                if (bgmPlayer.getStatus() == MediaPlayer.Status.PAUSED)
+                    bgmPlayer.play();
+                return;
+            }
+
+            URL r = SoundManager.class.getClassLoader().getResource("sounds/" + filename);
+            if (r == null) return;
+
+            Media media = new Media(r.toString());
+            bgmPlayer = new MediaPlayer(media);
+            bgmPlayer.setCycleCount(MediaPlayer.INDEFINITE);
+
+            applyBGMVolume();
+            bgmPlayer.play();
+
+        } catch (Exception ignored) {}
+    }
+
+    public static void stopBGM() {
+        if (bgmPlayer != null) {
+            bgmPlayer.stop();
+            bgmPlayer = null;
+        }
+    }
+
+    // =====================================
+    // VOLUME + MUTE
+    // =====================================
+
+    public static void setBGMVolume(double v) {
+        bgmVolume = v;
+        applyBGMVolume();
+    }
+
+    public static void applyBGMVolume() {
+        if (bgmPlayer != null)
+            bgmPlayer.setVolume(mutedBGM ? 0 : bgmVolume);
+    }
+
+    public static double getBGMVolume() {
+        return bgmVolume;
+    }
+
+    public static void setBGMMute(boolean mute) {
+        mutedBGM = mute;
+        applyBGMVolume();
+    }
+
+    public static boolean isBGMMuted() {
+        return mutedBGM;
+    }
+
+    // --- SFX ---
+    public static void setSFXVolume(double v) {
+        sfxVolume = v;
+        for (AudioClip c : sounds.values())
+            c.setVolume(mutedSFX ? 0 : sfxVolume);
+    }
+
+    public static double getSFXVolume() {
+        return sfxVolume;
+    }
+
+    public static void setSFXMute(boolean mute) {
+        mutedSFX = mute;
+        for (AudioClip c : sounds.values())
+            c.setVolume(mute ? 0 : sfxVolume);
+    }
+
+    public static boolean isSFXMuted() {
+        return mutedSFX;
+    }
+
+    // =====================================
+    // NORMAL SFX
+    // =====================================
     private static void loadSound(String key, String filename) {
         try {
             AudioClip clip = new AudioClip(
                     SoundManager.class.getResource("/" + filename).toExternalForm()
             );
+            clip.setVolume(sfxVolume);
             sounds.put(key, clip);
-        } catch (Exception e) {
-            System.out.println("Failed to load sound: " + filename);
-        }
+        } catch (Exception ignored) {}
     }
 
     public static void play(String key) {
-        AudioClip clip = sounds.get(key);
-        if (clip != null) clip.play();
+        if (!mutedSFX && sounds.containsKey(key))
+            sounds.get(key).play();
     }
 }

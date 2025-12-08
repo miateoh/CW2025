@@ -114,6 +114,7 @@
             <Button fx:id="resumeButton" text="Resume"/>
             <Button fx:id="restartButton" text="Restart"/>
             <Button fx:id="mainMenuButton" text="Main Menu"/>
+            <Button fx:id="settingsButton" text="Settings"/>
             <Button fx:id="quitButton" text="Quit"/>
         </VBox>
     </Pane>

@@ -7,6 +7,7 @@
 
 package com.tetris.ui.controllers;
 
+import com.tetris.Main;
 import com.tetris.sound.SoundManager;
 import com.tetris.ui.views.ViewData;
 import com.tetris.game.bricks.DownData;
@@ -90,6 +91,7 @@ public class GuiController implements Initializable {
     @FXML private StackPane rootPane;
     @FXML private Label timerLabel;
     @FXML private Button mainMenuButton;
+    @FXML private Button settingsButton;
 
     private Rectangle[][][] nextPieceRectangles;
     private Rectangle[][] displayMatrix;
@@ -145,6 +147,11 @@ public class GuiController implements Initializable {
         quitButton.setOnAction(e -> System.exit(0));
         mainMenuButton.setOnAction(e -> returnToMainMenu());
 
+        settingsButton.setOnAction(e -> {
+            SoundManager.play("menu");
+            openSettings();
+        });
+
         // Wire up game over panel buttons
         gameOverPanel.setOnRestart(this::restartGame);
         gameOverPanel.setOnResetScores(this::resetHighScores);
@@ -165,6 +172,24 @@ public class GuiController implements Initializable {
 
             updatePosition();
         });
+    }
+
+    private void openSettings() {
+        try {
+            // load settings FXML
+            FXMLLoader loader = new FXMLLoader(Main.class.getResource("/settings.fxml"));
+            Parent root = loader.load();
+
+            // pause BGM while in settings
+            SoundManager.pauseBGM();
+
+            // show settings screen
+            Stage stage = (Stage) rootPane.getScene().getWindow();
+            stage.setScene(new Scene(root, 700, 700));
+
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
     }
 
     // ===========================
@@ -762,7 +787,7 @@ public class GuiController implements Initializable {
     public void gameOver() {
 
         SoundManager.stopBGM();
-        SoundManager.playGameOver();
+        SoundManager.play("gameover");
 
         // Stop timers
         if (timeLine != null) timeLine.stop();
