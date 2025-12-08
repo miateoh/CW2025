@@ -1,6 +1,7 @@
 package com.tetris;
 
 import com.tetris.game.logic.GameController;
+import com.tetris.sound.SoundManager;
 import com.tetris.ui.controllers.GuiController;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
@@ -15,6 +16,8 @@ public class Main extends Application {
 
     @Override
     public void start(Stage primaryStage) throws Exception {
+
+        SoundManager.load();
 
         FXMLLoader loader = new FXMLLoader(
                 getClass().getClassLoader().getResource("main_menu.fxml")

@@ -1,5 +1,6 @@
 package com.tetris.ui.views;
 
+import com.tetris.sound.SoundManager;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
@@ -14,6 +15,7 @@ public class GameOverPanel extends BorderPane {
 
     private Button restartButton;
     private Button resetScoresButton; // NEW
+    private Button mainMenuButton;
 
     // High score display components
     private Label finalScoreLabel;
@@ -112,10 +114,12 @@ public class GameOverPanel extends BorderPane {
         hintLabel.setStyle("-fx-text-fill: #888; -fx-font-size: 12px;");
         hintLabel.setTextAlignment(TextAlignment.CENTER);
 
-        // NEW: Button container for side-by-side layout
+        mainMenuButton = createStyledButton("MAIN MENU", "#2196F3", "#1976D2");
+
+// NEW: Button layout
         HBox buttonBox = new HBox(20);
         buttonBox.setAlignment(Pos.CENTER);
-        buttonBox.getChildren().addAll(restartButton, resetScoresButton);
+        buttonBox.getChildren().addAll(restartButton, mainMenuButton, resetScoresButton);
 
         // Layout
         contentBox = new VBox(15);
@@ -137,11 +141,11 @@ public class GameOverPanel extends BorderPane {
         BorderPane.setAlignment(contentBox, Pos.CENTER);
         setCenter(null);
         setBottom(null);
-        BorderPane.setMargin(contentBox, new Insets(60, 0, 0, 0));
+        BorderPane.setMargin(contentBox, new Insets(0, 0, 0, 0));
 
         // Semi-transparent background
         setStyle("-fx-background-color: rgba(0, 0, 0, 0.85);");
-        setPrefSize(500, 500);
+        setPrefSize(600, 500);
     }
 
     private Button createStyledButton(String text, String color, String hoverColor) {
@@ -265,7 +269,10 @@ public class GameOverPanel extends BorderPane {
 
     // ORIGINAL: Sets the action for the restart button
     public void setOnRestart(Runnable action) {
-        restartButton.setOnAction(e -> action.run());
+        restartButton.setOnAction(e -> {
+            SoundManager.play("restart");   //  play restart sound
+            action.run();                   // run actual restart logic
+        });
     }
 
     // NEW: Sets the action for the reset scores button
@@ -327,6 +334,10 @@ public class GameOverPanel extends BorderPane {
     public void centerContent() {
         this.setTop(null);      // remove top placement
         this.setCenter(contentBox);  // center entire panel
+    }
+
+    public void setOnMainMenu(Runnable action) {
+        mainMenuButton.setOnAction(e -> action.run());
     }
 
 }

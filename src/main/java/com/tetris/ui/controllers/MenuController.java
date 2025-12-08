@@ -7,6 +7,7 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.stage.Stage;
+import com.tetris.sound.SoundManager;
 
 public class MenuController {
 
@@ -16,9 +17,29 @@ public class MenuController {
 
     @FXML
     public void initialize() {
-        startButton.setOnAction(e -> openModeSelect());
-        scoresButton.setOnAction(e -> openScores());
-        quitButton.setOnAction(e -> System.exit(0));
+
+        // -----------------------
+        //   CLICK SOUND
+        // -----------------------
+        startButton.setOnAction(e -> {
+            SoundManager.play("menu");
+            openModeSelect();
+        });
+
+        scoresButton.setOnAction(e -> {
+            SoundManager.play("menu");
+            openScores();
+        });
+
+        quitButton.setOnAction(e -> {
+            SoundManager.play("menu");
+            System.exit(0);
+        });
+    }
+
+    /** Play menu sound when hovering over a button */
+    private void addHoverSound(Button btn) {
+        btn.setOnMouseEntered(e -> SoundManager.play("menu"));
     }
 
     private void openModeSelect() {

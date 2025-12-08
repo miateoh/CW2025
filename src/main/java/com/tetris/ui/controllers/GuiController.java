@@ -7,6 +7,7 @@
 
 package com.tetris.ui.controllers;
 
+import com.tetris.sound.SoundManager;
 import com.tetris.ui.views.ViewData;
 import com.tetris.game.bricks.DownData;
 import com.tetris.game.events.EventSource;
@@ -27,9 +28,12 @@ import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 
 import javafx.scene.Group;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 
@@ -85,6 +89,7 @@ public class GuiController implements Initializable {
     @FXML private Pane gameContainer;
     @FXML private StackPane rootPane;
     @FXML private Label timerLabel;
+    @FXML private Button mainMenuButton;
 
     private Rectangle[][][] nextPieceRectangles;
     private Rectangle[][] displayMatrix;
@@ -133,12 +138,17 @@ public class GuiController implements Initializable {
 
         // Wire up buttons
         resumeButton.setOnAction(e -> resumeGame());
-        restartButton.setOnAction(e -> restartGame());
+        restartButton.setOnAction(e -> {
+            SoundManager.play("restart");
+            restartGame();
+        });
         quitButton.setOnAction(e -> System.exit(0));
+        mainMenuButton.setOnAction(e -> returnToMainMenu());
 
         // Wire up game over panel buttons
         gameOverPanel.setOnRestart(this::restartGame);
         gameOverPanel.setOnResetScores(this::resetHighScores);
+        gameOverPanel.setOnMainMenu(this::returnToMainMenu);
 
         addAutoScaling();
 
@@ -182,33 +192,38 @@ public class GuiController implements Initializable {
 
         switch (keyEvent.getCode()) {
 
-            case LEFT, A ->
-                    refreshBrick(eventListener.onLeftEvent(new MoveEvent(EventType.LEFT, EventSource.USER)));
+            case LEFT, A -> {
+                refreshBrick(eventListener.onLeftEvent(new MoveEvent(EventType.LEFT, EventSource.USER)));
+            }
 
-            case RIGHT, D ->
-                    refreshBrick(eventListener.onRightEvent(new MoveEvent(EventType.RIGHT, EventSource.USER)));
+            case RIGHT, D -> {
+                refreshBrick(eventListener.onRightEvent(new MoveEvent(EventType.RIGHT, EventSource.USER)));
+            }
 
-            case UP, W ->
-                    refreshBrick(eventListener.onRotateEvent(new MoveEvent(EventType.ROTATE, EventSource.USER)));
+            case UP, W -> {
+                SoundManager.play("rotate");
+                refreshBrick(eventListener.onRotateEvent(new MoveEvent(EventType.ROTATE, EventSource.USER)));
+            }
 
-            case DOWN, S ->
-                    moveDown(new MoveEvent(EventType.DOWN, EventSource.USER));
+            case DOWN, S -> {
+                SoundManager.play("softDrop");
+                moveDown(new MoveEvent(EventType.DOWN, EventSource.USER));
+            }
 
             case SPACE -> {
+                SoundManager.play("hardDrop");
                 DownData data = eventListener.onHardDropEvent(
                         new MoveEvent(EventType.DOWN, EventSource.USER)
                 );
-
-                // FIXED: Safe notification
                 showScoreNotification(data);
-
                 refreshBrick(data.getViewData());
             }
 
-            case C ->
-                    refreshBrick(eventListener.onHoldEvent(new MoveEvent(EventType.ROTATE, EventSource.USER)));
+            case C -> {
+                SoundManager.play("hold");
+                refreshBrick(eventListener.onHoldEvent(new MoveEvent(EventType.ROTATE, EventSource.USER)));
+            }
         }
-
         keyEvent.consume();
     }
 
@@ -224,8 +239,24 @@ public class GuiController implements Initializable {
         else pauseGame();
     }
 
+    private void returnToMainMenu() {
+        try {
+            FXMLLoader loader = new FXMLLoader(
+                    getClass().getClassLoader().getResource("main_menu.fxml")
+            );
+            Parent root = loader.load();
+
+            Stage stage = (Stage) rootPane.getScene().getWindow();
+            stage.setScene(new Scene(root, 700, 700));
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     private void pauseGame() {
         isPause.set(true);
+        SoundManager.play("pause");
 
         if (timeLine != null) timeLine.pause();
         if (isTimeTrialMode && timeTrialTimeline != null)
@@ -246,6 +277,7 @@ public class GuiController implements Initializable {
 
     private void resumeGame() {
         isPause.set(false);
+        SoundManager.play("unpause");
 
         if (timeLine != null) timeLine.play();
         if (isTimeTrialMode && timeTrialTimeline != null)
@@ -657,6 +689,7 @@ public class GuiController implements Initializable {
         if (data.getClearRow() != null && data.getClearRow().getLinesRemoved() > 0
                 && groupNotification != null && groupNotification.getChildren() != null) {
             NotificationPanel n = new NotificationPanel("+" + data.getClearRow().getScoreBonus());
+            SoundManager.play("lineClear");
             groupNotification.getChildren().add(n);
             n.showScore(groupNotification.getChildren());
         }
@@ -705,6 +738,7 @@ public class GuiController implements Initializable {
         // FIXED: Safe notification
         if (groupNotification != null && groupNotification.getChildren() != null) {
             NotificationPanel notification = new NotificationPanel("LEVEL " + newLevel + "!");
+            SoundManager.play("levelUp");
             groupNotification.getChildren().add(notification);
             notification.setLayoutY(100);
             notification.showScore(groupNotification.getChildren());
@@ -808,6 +842,9 @@ public class GuiController implements Initializable {
     public void showComboNotification(int comboCount, int bonusPoints) {
         // FIXED: Safe notification
         if (groupNotification != null && groupNotification.getChildren() != null) {
+
+            SoundManager.play("combo");
+
             NotificationPanel notification = new NotificationPanel(
                     "COMBO x" + comboCount + "! (+" + bonusPoints + ")"
             );
