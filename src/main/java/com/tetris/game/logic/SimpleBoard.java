@@ -202,20 +202,16 @@ public class SimpleBoard implements Board {
     public ClearRow clearRows() {
         ClearRow clearRow = boardState.clearRows();
 
-        // Track lines cleared for level progression
         if (clearRow.getLinesRemoved() > 0) {
             int previousLevel = level.getCurrentLevel();
             level.addLines(clearRow.getLinesRemoved());
 
-            // Award level-up bonus if leveled up
             if (level.justLeveledUp(previousLevel)) {
                 score.add(level.getLevelUpBonus());
             }
 
-            // NEW: Increment combo on line clear
             score.incrementCombo();
         } else {
-            // NEW: Break combo if no lines cleared
             score.breakCombo();
         }
 

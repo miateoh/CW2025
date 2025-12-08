@@ -4,6 +4,7 @@
  *
  * This class is stateless and only provides pure static helper methods.
  */
+
 package com.tetris.game.board;
 
 import java.util.List;
@@ -14,34 +15,29 @@ public class MatrixOperations {
     private MatrixOperations() {}
 
     // -------------------------------------------------------------------------
-    // INTERSECTION CHECK — consistent row-major (board[y][x])
+    // INTERSECTION CHECK
     // -------------------------------------------------------------------------
     public static boolean intersect(int[][] board, int[][] shape, int offsetX, int offsetY) {
 
-        int shapeRows = shape.length;          // y dimension
-        int shapeCols = shape[0].length;       // x dimension
+        int shapeRows = shape.length;
+        int shapeCols = shape[0].length;
 
-        int boardHeight = board.length;        // rows
-        int boardWidth  = board[0].length;     // columns
+        int boardHeight = board.length;
+        int boardWidth = board[0].length;
 
         for (int sy = 0; sy < shapeRows; sy++) {
             for (int sx = 0; sx < shapeCols; sx++) {
 
                 if (shape[sy][sx] != 0) {
 
-                    int bx = offsetX + sx;     // board X
-                    int by = offsetY + sy;     // board Y
+                    int bx = offsetX + sx;
+                    int by = offsetY + sy;
 
-                    // Out of bounds → collision
-                    if (bx < 0 || bx >= boardWidth ||
-                            by < 0 || by >= boardHeight) {
+                    if (bx < 0 || bx >= boardWidth || by < 0 || by >= boardHeight)
                         return true;
-                    }
 
-                    // Filled cell → collision
-                    if (board[by][bx] != 0) {
+                    if (board[by][bx] != 0)
                         return true;
-                    }
                 }
             }
         }
@@ -50,7 +46,7 @@ public class MatrixOperations {
     }
 
     // -------------------------------------------------------------------------
-    // MERGE SHAPE INTO BOARD — row-major (board[y][x])
+    // MERGE SHAPE INTO BOARD
     // -------------------------------------------------------------------------
     public static void merge(int[][] board, int[][] shape, int offsetX, int offsetY) {
 
@@ -68,9 +64,7 @@ public class MatrixOperations {
                     int bx = offsetX + sx;
                     int by = offsetY + sy;
 
-                    if (bx >= 0 && bx < boardWidth &&
-                            by >= 0 && by < boardHeight) {
-
+                    if (bx >= 0 && bx < boardWidth && by >= 0 && by < boardHeight) {
                         board[by][bx] = shape[sy][sx];
                     }
                 }
@@ -79,19 +73,19 @@ public class MatrixOperations {
     }
 
     // -------------------------------------------------------------------------
-    // CLEAR ROWS — also updated to row-major (board[y][x])
+    // CLEAR ROWS — supports particle animation
     // -------------------------------------------------------------------------
     public static ClearRow checkRemoving(int[][] board) {
 
-        int boardHeight = board.length;     // rows
-        int boardWidth  = board[0].length;  // columns
+        int boardHeight = board.length;
+        int boardWidth = board[0].length;
 
         int removedCount = 0;
+        java.util.List<Integer> clearedRows = new java.util.ArrayList<>();
 
         int[][] newBoard = new int[boardHeight][boardWidth];
         int newRow = boardHeight - 1;
 
-        // Scan from bottom up
         for (int y = boardHeight - 1; y >= 0; y--) {
 
             boolean full = true;
@@ -104,17 +98,21 @@ public class MatrixOperations {
             }
 
             if (!full) {
-                // Keep this row
                 for (int x = 0; x < boardWidth; x++) {
                     newBoard[newRow][x] = board[y][x];
                 }
                 newRow--;
             } else {
                 removedCount++;
+                clearedRows.add(y);
             }
         }
 
-        return new ClearRow(newBoard, removedCount);
+        return new ClearRow(
+                newBoard,
+                removedCount,
+                clearedRows.stream().mapToInt(i -> i).toArray()
+        );
     }
 
     // -------------------------------------------------------------------------

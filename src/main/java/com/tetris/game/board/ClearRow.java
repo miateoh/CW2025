@@ -4,35 +4,27 @@ public class ClearRow {
 
     private final int[][] newMatrix;
     private final int count;
-    private final int scoreBonus;
+    private final int[] clearedRows;
 
-    public ClearRow(int[][] newMatrix, int count) {
+    public ClearRow(int[][] newMatrix, int count, int[] clearedRows) {
         this.newMatrix = newMatrix;
         this.count = count;
-
-        // Score bonus logic (standard Tetris scoring)
-        switch (count) {
-            case 1: scoreBonus = 100; break;
-            case 2: scoreBonus = 300; break;
-            case 3: scoreBonus = 500; break;
-            case 4: scoreBonus = 800; break;
-            default: scoreBonus = 0; break;
-        }
+        this.clearedRows = clearedRows;
     }
 
-    public int[][] getNewMatrix() {
-        return newMatrix;
-    }
+    public int[][] getNewMatrix() { return newMatrix; }
+    public int getCount() { return count; }
+    public int[] getClearedRows() { return clearedRows; }
 
-    public int getCount() {
-        return count;
-    }
-
-    public int getLinesRemoved() {
-        return count;
-    }
+    public int getLinesRemoved() { return count; }
 
     public int getScoreBonus() {
-        return scoreBonus;
+        switch (count) {
+            case 1: return 100;
+            case 2: return 300;
+            case 3: return 500;
+            case 4: return 800;
+            default: return 0;
+        }
     }
 }

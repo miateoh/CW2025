@@ -59,6 +59,11 @@ import javafx.application.Platform;
 import javafx.animation.PauseTransition;
 import javafx.util.Duration;
 import javafx.scene.layout.HBox;
+import javafx.animation.TranslateTransition;
+import javafx.animation.ParallelTransition;
+import javafx.animation.Interpolator;
+import javafx.scene.shape.Circle;
+import javafx.scene.effect.DropShadow;
 
 public class GuiController implements Initializable {
 
@@ -748,12 +753,23 @@ public class GuiController implements Initializable {
 
     // NEW: Safe method to show score notifications
     private void showScoreNotification(DownData data) {
-        if (data.getClearRow() != null && data.getClearRow().getLinesRemoved() > 0
-                && groupNotification != null && groupNotification.getChildren() != null) {
-            NotificationPanel n = new NotificationPanel("+" + data.getClearRow().getScoreBonus());
+
+        if (data.getClearRow() != null && data.getClearRow().getLinesRemoved() > 0) {
+
+            // 1. Play sound
             SoundManager.play("lineClear");
-            groupNotification.getChildren().add(n);
-            n.showScore(groupNotification.getChildren());
+
+            // 2. Spawn glowing neon particles for EACH cleared row
+            for (int clearedRow : data.getClearRow().getClearedRows()) {
+                playLineClearParticles(clearedRow);
+            }
+
+            // 3. Show floating score text (your existing effect)
+            if (groupNotification != null && groupNotification.getChildren() != null) {
+                NotificationPanel n = new NotificationPanel("+" + data.getClearRow().getScoreBonus());
+                groupNotification.getChildren().add(n);
+                n.showScore(groupNotification.getChildren());
+            }
         }
     }
 
@@ -1134,6 +1150,47 @@ public class GuiController implements Initializable {
 
         // Trigger actual game over logic
         gameOver();
+    }
+
+    // ======================================================
+//  PARTICLE EFFECT FOR LINE CLEARS (NEON GLOW)
+// ======================================================
+    private void playLineClearParticles(int clearedBoardRow) {
+
+        // Convert board row → pixel Y inside gamePanel
+        int pixelY = (clearedBoardRow - 2) * BRICK_SIZE;
+        if (pixelY < 0) return;
+
+        int particleCount = 35;
+        int columns = 10;
+
+        for (int i = 0; i < particleCount; i++) {
+
+            Circle particle = new Circle(3, Color.web("#2FE4FF"));
+            particle.setEffect(new DropShadow(15, Color.web("#2FE4FF")));
+
+            // Place particle along the full cleared row width
+            particle.setTranslateX(Math.random() * (columns * BRICK_SIZE));
+            particle.setTranslateY(pixelY);
+
+            gamePanel.getChildren().add(particle);
+
+            double dx = (Math.random() - 0.5) * 140; // wider burst
+            double dy = -40 - Math.random() * 40;   // upward pop
+
+            TranslateTransition tt = new TranslateTransition(Duration.millis(380), particle);
+            tt.setByX(dx);
+            tt.setByY(dy);
+            tt.setInterpolator(Interpolator.EASE_OUT);
+
+            FadeTransition ft = new FadeTransition(Duration.millis(380), particle);
+            ft.setFromValue(1);
+            ft.setToValue(0);
+
+            ParallelTransition p = new ParallelTransition(tt, ft);
+            p.setOnFinished(e -> gamePanel.getChildren().remove(particle));
+            p.play();
+        }
     }
 
     private void startSprintTimer() {
