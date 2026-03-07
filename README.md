@@ -1,6 +1,6 @@
 # Tetris Game Project – COMP2042 Coursework                                                                                                                                                   
                                                                                                                                                                                               
-A fully-featured JavaFX Tetris game redesigned with modern UI, multiple game modes, polished transitions, audio, animations, and extensive refactoring anchored in solid principles and clean 
+A fully-featured JavaFX Tetris game redesigned with modern UI, multiple game modes, polished transitions, audio, animations, and extensive refactoring anchored in solid principles.
                                                                                                                                                                                               
 This project extends and maintains the original coursework codebase by reorganizing its structure, fixing critical bugs, and implementing substantial new gameplay features across UI, logic, 
                                                                                                                                                                                               
